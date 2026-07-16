@@ -10,7 +10,7 @@ Sources of truth (read before building):
 ## Hard rules (violations = rejected)
 
 1. **No raw hex colors, no new CSS files.** If a screen truly needs a local style, max ~15 lines in a `<style>` block using ONLY the CSS custom properties, with a comment `/* candidate for promotion */`.
-2. **No em dashes (—) anywhere in copy.** Use periods, commas, or colons.
+2. **No em dashes anywhere in copy.** Use periods, commas, or colons.
 3. **One primary button per card.** Secondary actions use `class="ghost"`.
 4. All numbers that can column-align use existing classes (`.balance`, `.alloc-amt`, `.stat-value`) or inherit `tabular-nums` from them.
 5. Copy tone: simple, concrete, benefits before features, 8th grade reading level. No "leverage", "unlock" is allowed ONLY as the product's literal verb (unlocking benefits), no "seamless", no "robust".
@@ -186,3 +186,13 @@ The Mobbin patterns are now working features, not visual dressing. New state lay
 - All interactive elements work with the simulated state (connect, pay, reset).
 - Zero raw hex, zero em dashes, valid HTML.
 - Links between screens use relative hrefs exactly as named above.
+
+## Screen 8: `start.html` (Start a community)
+
+PRD creator onboarding acceptance: a connected creator can name a community, simulate the on-chain claim, and reach the live state.
+
+- Wallet guard card: if no wallet is connected, show only a centered prompt with one primary "Connect wallet (demo)" button that calls `K.connect()` before the flow begins.
+- Stepper: Welcome starts active, Brand becomes active after the welcome action, and Live becomes active after creation. Completed steps use checkmarks and each line lights when its left step is done.
+- Welcome card: `.num-label` (`10 WELCOME`), "Get paid for what you publish", three benefit lines, one primary "Create my community" button, and the free-to-start signing hint.
+- Brand card: `.num-label` (`11 BRAND`), a required community name input, optional description, logo hint, and one primary submit button. Submission simulates wallet confirmation, stores `k_creator_brand`, and logs "Community created" through `K.logActivity`.
+- Live card (`.card.center`): `.num-label` (`12 LIVE`), the saved community name, one primary link to partner.html, and one ghost link to dashboard.html.

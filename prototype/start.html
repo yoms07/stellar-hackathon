@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Komunify · Start a community</title>
+  <link rel="icon" type="image/png" href="logo-mark.png">
+  <link rel="stylesheet" href="styles.css?v=5">
+  <style>
+    /* candidate for promotion */
+    textarea {
+      background: var(--color-bg-input);
+      border: 1px solid var(--color-border-medium);
+      border-radius: var(--radius-md);
+      padding: var(--space-3);
+      color: var(--color-content-primary);
+      font: inherit;
+      resize: vertical;
+    }
+    textarea:focus { outline: none; border-color: var(--color-border-accent); }
+  </style>
+</head>
+<body>
+<main class="shell">
+  <div class="topbar">
+    <a class="logo" href="index.html"><img src="logo-mark.png" alt="" class="logo-mark">Komunify</a>
+    <nav class="topbar-nav">
+      <a href="index.html">Connect</a>
+      <a href="subscribe.html">Subscribe</a>
+      <a href="benefits.html">Benefits</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="traction.html">Traction</a>
+      <code id="topbar-wallet" class="hidden"></code>
+    </nav>
+  </div>
+
+  <div class="pay-col">
+    <section class="card center hidden" id="guard-card">
+      <h2>Connect a wallet first</h2>
+      <p class="hint">Connect your testnet wallet to claim a community in this demo.</p>
+      <button id="connect-btn" type="button">Connect wallet (demo)</button>
+    </section>
+
+    <div class="stepper" id="wizard-stepper">
+      <div class="step active" id="step-1"><span class="step-dot">1</span><span class="step-name">Welcome</span></div>
+      <div class="step-line" id="line-1"></div>
+      <div class="step todo" id="step-2"><span class="step-dot">2</span><span class="step-name">Brand</span></div>
+      <div class="step-line" id="line-2"></div>
+      <div class="step todo" id="step-3"><span class="step-dot">3</span><span class="step-name">Live</span></div>
+    </div>
+
+    <section class="card" id="welcome-card">
+      <div class="num-label"><span class="num">10</span> WELCOME</div>
+      <h2>Get paid for what you publish</h2>
+      <div class="benefit-line">
+        <span><strong>Earn on every read</strong><br><span class="hint">Members support your work when they read it.</span></span>
+      </div>
+      <div class="benefit-line">
+        <span><strong>Your work stays yours</strong><br><span class="hint">You keep control of your name, ideas, and content.</span></span>
+      </div>
+      <div class="benefit-line">
+        <span><strong>Cash out anytime</strong><br><span class="hint">Send your earnings to your wallet when you are ready.</span></span>
+      </div>
+      <button id="welcome-next" type="button">Create my community</button>
+      <p class="hint">Free to start. You will sign one quick transaction to claim your community on-chain.</p>
+    </section>
+
+    <section class="card hidden" id="brand-card">
+      <div class="num-label"><span class="num">11</span> BRAND</div>
+      <h2>Name your community</h2>
+      <form id="brand-form">
+        <label>Community name
+          <input id="community-name" type="text" required autocomplete="organization">
+        </label>
+        <label>Description
+          <textarea id="community-description" rows="4"></textarea>
+        </label>
+        <p class="hint">Logo optional, image under 512 KB.</p>
+        <div><button id="create-btn" type="submit">Create my community</button></div>
+      </form>
+    </section>
+
+    <section class="card center hidden" id="live-card">
+      <div class="num-label"><span class="num">12</span> LIVE</div>
+      <h2>You are live</h2>
+      <p><span id="live-name">Your community</span> is now on komunify.</p>
+      <a class="btn" href="partner.html">View your public page →</a>
+      <a class="btn ghost" href="dashboard.html">Go to dashboard →</a>
+    </section>
+  </div>
+
+  <footer>
+    <a href="#" id="reset-proto">Reset demo</a>
+  </footer>
+</main>
+
+<script src="app.js?v=5"></script>
+<script>
+  (function () {
+    var guardCard = document.getElementById("guard-card");
+    var stepper = document.getElementById("wizard-stepper");
+    var cards = [
+      document.getElementById("welcome-card"),
+      document.getElementById("brand-card"),
+      document.getElementById("live-card")
+    ];
+
+    function setStep(current) {
+      [1, 2, 3].forEach(function (num) {
+        var state = num < current ? "done" : (num === current ? "active" : "todo");
+        var step = document.getElementById("step-" + num);
+        step.className = "step " + state;
+        step.querySelector(".step-dot").textContent = state === "done" ? "✓" : num;
+      });
+      document.getElementById("line-1").className = "step-line" + (current > 1 ? " lit" : "");
+      document.getElementById("line-2").className = "step-line" + (current > 2 ? " lit" : "");
+    }
+
+    function showStep(current) {
+      cards.forEach(function (card, index) {
+        card.classList.toggle("hidden", index !== current - 1);
+      });
+      setStep(current);
+    }
+
+    document.getElementById("reset-proto").addEventListener("click", function (e) {
+      e.preventDefault();
+      K.reset();
+      location.href = "index.html";
+    });
+
+    document.getElementById("connect-btn").addEventListener("click", function () {
+      K.connect();
+      location.reload();
+    });
+
+    if (!K.wallet) {
+      guardCard.classList.remove("hidden");
+      stepper.classList.add("hidden");
+      cards.forEach(function (card) { card.classList.add("hidden"); });
+      return;
+    }
+
+    document.getElementById("welcome-next").addEventListener("click", function () {
+      showStep(2);
+      document.getElementById("community-name").focus();
+    });
+
+    document.getElementById("brand-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var input = document.getElementById("community-name");
+      var name = input.value.trim();
+      if (!name) {
+        input.setCustomValidity("Enter a community name.");
+        input.reportValidity();
+        return;
+      }
+      input.setCustomValidity("");
+
+      var createBtn = document.getElementById("create-btn");
+      createBtn.disabled = true;
+      createBtn.textContent = "Check your wallet…";
+
+      window.setTimeout(function () {
+        localStorage.setItem("k_creator_brand", name);
+        K.logActivity("Community created", name);
+        document.getElementById("live-name").textContent = localStorage.getItem("k_creator_brand") || "Your community";
+        showStep(3);
+      }, 1200);
+    });
+
+    document.getElementById("community-name").addEventListener("input", function () {
+      this.setCustomValidity("");
+    });
+
+    showStep(1);
+  })();
+</script>
+</body>
+</html>
