@@ -7,6 +7,7 @@ import { Wallet, Coins, ShieldCheck, ChevronDown, Crown, BadgePercent, BookOpen,
 import { useQuery } from '@tanstack/react-query';
 import { ApiClient } from '@/services/api/client';
 import { useWallet } from '@/providers/wallet-provider';
+import { PARTNER_COMMUNITIES } from '@/lib/catalog';
 
 function truncateAddress(address: string) {
   return `${address.slice(0, 4)}…${address.slice(-4)}`;
@@ -38,12 +39,12 @@ function Header() {
         </div>
 
         <nav className="hidden md:flex items-center gap-10 text-[13px] tracking-wide text-[var(--color-content-secondary)]">
-          <a href="#how" className="hover:text-[var(--color-content-accent)] transition-colors">
+          <Link href="/packages" className="hover:text-[var(--color-content-accent)] transition-colors">
             Packages
-          </a>
-          <a href="#communities" className="hover:text-[var(--color-content-accent)] transition-colors">
+          </Link>
+          <Link href="/communities" className="hover:text-[var(--color-content-accent)] transition-colors">
             Communities
-          </a>
+          </Link>
           <a
             href="https://github.com/yoms07/stellar-hackathon"
             target="_blank"
@@ -1118,37 +1119,6 @@ function SplitLedgerSection() {
   );
 }
 
-const PARTNER_COMMUNITIES = [
-  {
-    initial: 'D',
-    name: 'Dev Web3 Bandung',
-    logo: '/communities/dev-web3-bandung.png',
-    description: 'Builder workshops, Soroban study group, and bootcamp recordings.',
-    badge: '+2.4K members',
-  },
-  {
-    initial: 'S',
-    name: 'Sawargy',
-    logo: '/communities/sawargy.png',
-    description: 'Design and freelance collective: client playbooks, portfolio reviews, and working sessions.',
-    badge: 'Pilot partner',
-  },
-  {
-    initial: 'S',
-    name: 'Serenity',
-    logo: '/communities/serenity.webp',
-    description: 'Community benefits and member events, onboarding with the first Bandung pilots.',
-    badge: 'Pilot partner',
-  },
-  {
-    initial: 'M',
-    name: 'Manexus',
-    logo: '/communities/manexus.png',
-    description: 'Builder community joining the pilot cohort with member resources and events.',
-    badge: 'Pilot partner',
-  },
-];
-
 const PERKS = [
   {
     icon: Crown,
@@ -1199,7 +1169,15 @@ function PartnersSection() {
           </h2>
         </motion.div>
 
-        <p className="mt-14 md:mt-16 text-[11px] tracking-[0.2em] uppercase text-[var(--color-content-secondary)]">Our communities</p>
+        <div className="mt-14 md:mt-16 flex items-center justify-between">
+          <p className="text-[11px] tracking-[0.2em] uppercase text-[var(--color-content-secondary)]">Our communities</p>
+          <Link
+            href="/communities"
+            className="text-[12px] tracking-wide uppercase text-[var(--color-content-accent)] hover:opacity-80 transition-opacity"
+          >
+            See all communities →
+          </Link>
+        </div>
 
         <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           {PARTNER_COMMUNITIES.map((community, index) => (
