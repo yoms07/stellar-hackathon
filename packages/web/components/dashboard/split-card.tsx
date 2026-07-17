@@ -5,8 +5,8 @@ import { getStellarConfig } from '@/lib/stellar';
 import { useConfig } from '@/services/subscription';
 
 const SPLIT = [
-  { name: 'Project owner', pct: 70 },
-  { name: 'Community manager', pct: 20 },
+  { name: 'Community partner', pct: 45 },
+  { name: 'Community manager', pct: 45 },
   { name: 'Komunify platform', pct: 10 },
 ] as const;
 
@@ -15,10 +15,10 @@ function shortHash(id: string): string {
 }
 
 /**
- * "03 AUTOMATIC SPLIT" card (prototype subscribe.html split-flow pattern). Reuses the
+ * "03 DISTRIBUTION SCHEME" card (prototype subscribe.html split-flow pattern). Reuses the
  * existing `useConfig` price query and the contract id already read from
- * `getStellarConfig()` (`NEXT_PUBLIC_KOMUNIFY_CONTRACT_ID`); the split percentages
- * mirror the contract's fixed allocation (70/20/10) and are display-only copy.
+ * `getStellarConfig()` (`NEXT_PUBLIC_KOMUNIFY_CONTRACT_ID`); each pool's split is set by
+ * that pool's DAO governance, so the percentages here are illustrative, not fixed.
  */
 export function SplitCard() {
   const config = useConfig();
@@ -28,9 +28,12 @@ export function SplitCard() {
   return (
     <section className="card split-flow">
       <div className="num-label">
-        <span className="num">03</span> AUTOMATIC SPLIT
+        <span className="num">03</span> DISTRIBUTION SCHEME
       </div>
-      <p className="hint">The Soroban contract splits every payment the moment it settles.</p>
+      <p className="hint">
+        The Soroban contract splits every payment the moment it settles, by a mix each pool&rsquo;s DAO
+        sets — the shares below are illustrative.
+      </p>
       <div>
         {SPLIT.map((s) => (
           <div className="alloc-row" key={s.name}>
