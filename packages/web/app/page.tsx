@@ -3,7 +3,8 @@
 import { animate, motion, AnimatePresence, useInView, useMotionValue, useTransform, useSpring, useReducedMotion, useScroll, type MotionValue } from 'framer-motion';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import Link from 'next/link';
-import { Wallet, Coins, ShieldCheck, ChevronDown, Crown, BadgePercent, BookOpen, Layers } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Wallet, Coins, ShieldCheck, ChevronDown, Crown, BadgePercent, BookOpen, Layers, Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { ApiClient } from '@/services/api/client';
 import { useWallet } from '@/providers/wallet-provider';
@@ -27,6 +28,24 @@ function Logo() {
 // Header with nav
 function Header() {
   const { isConnected, address, connecting, error, connect, disconnect } = useWallet();
+  const router = useRouter();
+  // Distinguishes an explicit "Connect" click from the silent session restore
+  // wallet-provider does on every mount — only the former should redirect,
+  // otherwise anyone who's connected before gets bounced off the landing page
+  // every time they visit it.
+  const userInitiatedConnect = useRef(false);
+
+  useEffect(() => {
+    if (isConnected && userInitiatedConnect.current) {
+      userInitiatedConnect.current = false;
+      router.push('/dashboard');
+    }
+  }, [isConnected, router]);
+
+  const handleConnect = () => {
+    userInitiatedConnect.current = true;
+    connect();
+  };
 
   return (
     <header className="relative z-20 max-w-7xl mx-auto px-6 md:px-10 pt-6">
@@ -45,14 +64,6 @@ function Header() {
           <Link href="/communities" className="hover:text-[var(--color-content-accent)] transition-colors">
             Communities
           </Link>
-          <a
-            href="https://github.com/yoms07/stellar-hackathon"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-[var(--color-content-accent)] transition-colors"
-          >
-            Github
-          </a>
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
@@ -87,7 +98,7 @@ function Header() {
           ) : (
             <button
               type="button"
-              onClick={connect}
+              onClick={handleConnect}
               disabled={connecting}
               title={error ?? undefined}
               className="inline-flex items-center gap-2 border border-solid border-[color-mix(in_srgb,var(--color-content-accent)_40%,transparent)] bg-transparent text-[var(--color-content-accent)] text-[13px] px-4 py-2 rounded-full hover:bg-[color-mix(in_srgb,var(--color-content-accent)_10%,transparent)] transition-colors disabled:opacity-60"
@@ -192,8 +203,14 @@ function CountUp({ value, decimals = 0 }: { value: number; decimals?: number }) 
 }
 
 // Live stats from API
+const STATS_FIXTURE: LiveStatsFixture = {
+  activeCreators: 12,
+  totalSubscriptions: 248,
+  totalRevenue: 12450.5,
+};
+
 function LiveStats() {
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats } = useQuery({
     queryKey: ['stats'],
     queryFn: async (): Promise<LiveStatsFixture> => {
       try {
@@ -207,13 +224,12 @@ function LiveStats() {
         return d;
       } catch {
         // Fallback fixture data
-        return {
-          activeCreators: 12,
-          totalSubscriptions: 248,
-          totalRevenue: 12450.5,
-        };
+        return STATS_FIXTURE;
       }
     },
+    // Render the fixture immediately instead of a "-" placeholder while the
+    // first request is in flight, then swap to live numbers when they land.
+    placeholderData: STATS_FIXTURE,
     refetchInterval: 30000,
   });
 
@@ -229,15 +245,15 @@ function LiveStats() {
       className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-5xl mx-auto text-center pt-8"
     >
       <div>
-        <p className="font-serif text-5xl md:text-6xl text-[var(--color-bg-primary)]">{isLoading ? '-' : <CountUp value={creators} />}+</p>
+        <p className="font-serif text-5xl md:text-6xl text-[var(--color-bg-primary)]"><CountUp value={creators} />+</p>
         <p className="text-[13px] font-semibold tracking-widest text-[color-mix(in_srgb,var(--color-bg-primary)_85%,transparent)] mt-1.5">PARTNERS</p>
       </div>
       <div>
-        <p className="font-serif text-5xl md:text-6xl text-[var(--color-bg-primary)]">{isLoading ? '-' : <CountUp value={subscriptions} />}+</p>
+        <p className="font-serif text-5xl md:text-6xl text-[var(--color-bg-primary)]"><CountUp value={subscriptions} />+</p>
         <p className="text-[13px] font-semibold tracking-widest text-[color-mix(in_srgb,var(--color-bg-primary)_85%,transparent)] mt-1.5">MEMBERS</p>
       </div>
       <div>
-        <p className="font-serif text-5xl md:text-6xl text-[var(--color-bg-primary)]">${isLoading ? '-' : <CountUp value={revenue / 1000} decimals={1} />}k+</p>
+        <p className="font-serif text-5xl md:text-6xl text-[var(--color-bg-primary)]">${<CountUp value={revenue / 1000} decimals={1} />}k+</p>
         <p className="text-[13px] font-semibold tracking-widest text-[color-mix(in_srgb,var(--color-bg-primary)_85%,transparent)] mt-1.5">PROCESSED ON-CHAIN</p>
       </div>
     </motion.div>
@@ -445,30 +461,18 @@ function HeroSection() {
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
   const heroBright = useTransform(scrollYProgress, [0, 0.6], [0, 1]);
   const [demoTab, setDemoTab] = useState<'how' | 'howto'>('howto');
-  const [needsUnmute, setNeedsUnmute] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [isMuted, setIsMuted] = useState(true);
   const demoVideoRef = useRef<HTMLVideoElement | null>(null);
 
+  // Always starts muted — audio-on-load is distracting, and unmuting is an
+  // explicit choice via the mute button below, not something a stray click
+  // anywhere on the page should trigger.
   useEffect(() => {
     const v = demoVideoRef.current;
     if (!v) return;
-    if (demoTab === 'howto') {
-      v.muted = false;
-      v.volume = 1;
-      v.play()
-        .then(() => setNeedsUnmute(false))
-        .catch((err) => {
-          // Mute-fallback only for autoplay policy blocks; AbortError from an
-          // interrupting pause() (StrictMode double-invoke) must not mute us.
-          if (!(err instanceof DOMException) || err.name !== 'NotAllowedError') return;
-          v.muted = true;
-          v.play().catch(() => {});
-          setNeedsUnmute(true);
-        });
-    } else {
-      v.muted = true;
-      v.play().catch(() => {});
-      setNeedsUnmute(false);
-    }
+    v.muted = true;
+    v.play().catch(() => {});
     return () => {
       // Detached media elements keep playing audio in Chrome; pause stops it.
       // Pause ONLY: tearing down src here breaks StrictMode's remount on first load.
@@ -482,19 +486,31 @@ function HeroSection() {
     v.muted = false;
     v.volume = 1;
     v.play().catch(() => {});
-    setNeedsUnmute(false);
   };
 
-  useEffect(() => {
-    if (!needsUnmute) return;
-    const handler = () => unmute();
-    window.addEventListener('pointerdown', handler, { once: true });
-    window.addEventListener('keydown', handler, { once: true });
-    return () => {
-      window.removeEventListener('pointerdown', handler);
-      window.removeEventListener('keydown', handler);
-    };
-  }, [needsUnmute]);
+  const togglePlay = () => {
+    const v = demoVideoRef.current;
+    if (!v) return;
+    if (v.paused) {
+      v.play().catch(() => {});
+    } else {
+      v.pause();
+    }
+  };
+
+  const toggleMute = () => {
+    const v = demoVideoRef.current;
+    if (!v) return;
+    if (v.muted) {
+      unmute();
+    } else {
+      v.muted = true;
+    }
+  };
+
+  // Only the talking walkthrough carries real audio worth nudging toward — the
+  // silent product loop has nothing to unmute.
+  const showUnmuteHint = demoTab === 'howto' && isMuted;
 
   return (
     <section ref={heroRef} className="relative overflow-hidden">
@@ -628,8 +644,46 @@ function HeroSection() {
                 playsInline
                 preload="metadata"
                 onEnded={() => setDemoTab((prev) => (prev === 'howto' ? 'how' : 'howto'))}
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+                onVolumeChange={() => setIsMuted(demoVideoRef.current?.muted ?? true)}
                 className="absolute inset-0 h-full w-full object-cover"
               />
+
+              {/* Player control: play/pause + mute */}
+              <div className="absolute bottom-3 left-3 z-10 flex items-center gap-1 rounded-full bg-[rgba(10,10,9,0.55)] backdrop-blur-sm p-1">
+                <button
+                  type="button"
+                  aria-label={isPlaying ? 'Pause video' : 'Play video'}
+                  onClick={togglePlay}
+                  className="w-7 h-7 p-0 rounded-full inline-flex items-center justify-center bg-transparent font-normal text-[rgba(236,217,193,0.8)] hover:text-[var(--color-content-accent)] hover:bg-transparent transition-colors"
+                >
+                  {isPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
+                </button>
+                <span className="relative inline-flex">
+                  {showUnmuteHint && !reduce && (
+                    <motion.span
+                      aria-hidden
+                      className="pointer-events-none absolute inset-0 rounded-full bg-[var(--color-content-accent)]"
+                      initial={{ opacity: 0.45, scale: 1 }}
+                      animate={{ opacity: 0, scale: 1.9 }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: 'easeOut' }}
+                    />
+                  )}
+                  <button
+                    type="button"
+                    aria-label={isMuted ? 'Unmute video' : 'Mute video'}
+                    onClick={toggleMute}
+                    className={
+                      showUnmuteHint
+                        ? 'relative w-7 h-7 p-0 rounded-full inline-flex items-center justify-center bg-transparent font-normal text-[var(--color-content-accent)] hover:bg-transparent transition-colors'
+                        : 'relative w-7 h-7 p-0 rounded-full inline-flex items-center justify-center bg-transparent font-normal text-[rgba(236,217,193,0.8)] hover:text-[var(--color-content-accent)] hover:bg-transparent transition-colors'
+                    }
+                  >
+                    {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                  </button>
+                </span>
+              </div>
 
               {/* Player control: video toggle */}
               <div className="absolute top-3 right-3 z-10 flex items-center gap-1 rounded-full bg-[rgba(10,10,9,0.55)] backdrop-blur-sm p-1">
@@ -658,50 +712,6 @@ function HeroSection() {
                   How to
                 </button>
               </div>
-
-              {needsUnmute && demoTab === 'howto' && (
-                <button
-                  type="button"
-                  aria-label="Turn sound on"
-                  onClick={unmute}
-                  className="absolute bottom-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full bg-[var(--color-content-accent)] text-[var(--color-content-on-accent)] px-3 py-1.5 text-[10px] tracking-widest uppercase"
-                >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                    <polygon points="4 8 8 8 12 4 12 20 8 16 4 16 4 8" />
-                    <path d="M16 8a5 5 0 0 1 0 8" />
-                    <path d="M18.5 5.5a9 9 0 0 1 0 13" />
-                  </svg>
-                  Turn on sound
-                </button>
-              )}
-
-              {needsUnmute && demoTab === 'howto' && (
-                <motion.div
-                  aria-hidden
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1, x: [0, 4, 0] }}
-                  transition={{
-                    opacity: { delay: 0.5, duration: 0.5, ease: EASE },
-                    x: { delay: 0.5, duration: 2.2, repeat: Infinity, ease: 'easeInOut' },
-                  }}
-                  className="pointer-events-none hidden md:block absolute bottom-1.5 right-[9.5rem] z-10 text-[var(--color-content-accent)]"
-                >
-                  <svg width="80" height="40" viewBox="0 0 80 40" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
-                    <motion.path
-                      d="M 6 12 C 26 4, 44 6, 66 20"
-                      initial={{ pathLength: 0 }}
-                      animate={{ pathLength: 1 }}
-                      transition={{ delay: 0.55, duration: 0.7, ease: EASE }}
-                    />
-                    <motion.path
-                      d="M 56 10 L 66 20 L 52 25"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 1.15, duration: 0.25 }}
-                    />
-                  </svg>
-                </motion.div>
-              )}
 
             </div>
           </ParallaxLayer>
