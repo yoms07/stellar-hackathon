@@ -605,7 +605,7 @@ function HeroSection() {
           transition={{ delay: 0.78, duration: 0.7, ease: [0.19, 1, 0.22, 1] }}
           className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-4"
         >
-          <Link href="/dashboard">
+          <Link href="#whitelist">
             <button className="group inline-flex items-center gap-3 bg-gradient-to-br from-[#fce27e] via-[#fad657] to-[#c9a83f] text-[var(--color-content-on-accent)] font-semibold text-[14px] tracking-wide pl-7 pr-2.5 py-2.5 rounded-full transition-all hover:shadow-[0_10px_40px_-6px_rgba(250,214,87,0.75)] hover:translate-y-[-1px] shadow-[0_8px_30px_-8px_rgba(250,214,87,0.55)]">
               Get early access
               <span className="w-8 h-8 rounded-full bg-black/10 flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] group-hover:translate-x-1 group-hover:-translate-y-[1px]">
@@ -1697,6 +1697,98 @@ function FAQSection() {
   );
 }
 
+const WHITELIST_FORM_ENDPOINT = 'https://docs.google.com/forms/d/e/1FAIpQLSeEndrZfJDyBi6a7SmyiHKWkVwO7-_4fslKr6ZsRatoys4X9g/formResponse';
+const WHITELIST_EMAIL_ENTRY = 'entry.545261420';
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function WhitelistSection() {
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState<'idle' | 'sending' | 'done' | 'error'>('idle');
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!EMAIL_PATTERN.test(email)) {
+      setStatus('error');
+      return;
+    }
+
+    setStatus('sending');
+    try {
+      await fetch(WHITELIST_FORM_ENDPOINT, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ [WHITELIST_EMAIL_ENTRY]: email }),
+      });
+      setStatus('done');
+    } catch {
+      setStatus('error');
+    }
+  };
+
+  return (
+    <section id="whitelist" className="relative py-24 md:py-36 scroll-mt-24 overflow-hidden">
+      <div className="relative max-w-6xl mx-auto px-6 md:px-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-80px' }}
+          transition={{ duration: 0.7, ease: EASE }}
+          className="relative z-10 max-w-2xl mx-auto text-center"
+        >
+          <div className="inline-flex items-center gap-2 rounded-full pl-3 pr-4 py-1.5 bg-[color-mix(in_srgb,var(--color-content-accent)_6%,transparent)] text-[11px] tracking-[0.2em] uppercase text-[var(--color-content-accent)]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-content-accent)]" />
+            Mainnet whitelist
+          </div>
+          <h2 className="mt-7 font-serif font-medium tracking-tight leading-[1.05] text-[2.4rem] md:text-[3.2rem] text-[var(--color-content-primary)]">
+            Be first on{' '}
+            <span className="bg-gradient-to-r from-[#fef0bf] via-[#fad657] to-[#b08d3e] bg-clip-text text-transparent">
+              mainnet.
+            </span>
+          </h2>
+          <p className="mt-6 max-w-xl mx-auto text-[15px] leading-relaxed text-[var(--color-content-secondary)]">
+            Komunify runs on Stellar testnet today. Drop your email and you are on the list when mainnet opens.
+          </p>
+
+          {status === 'done' ? (
+            <div className="mt-9 flex items-center justify-center gap-2 text-[14px] text-[var(--color-content-primary)]">
+              <span className="text-[var(--color-content-accent)]">✓</span>
+              You are on the list. We will email you when mainnet opens.
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@email.com"
+                className="w-full sm:w-80 bg-transparent border border-[color-mix(in_srgb,var(--color-content-secondary)_25%,transparent)] rounded-full px-5 py-3 text-[14px] text-[var(--color-content-primary)] placeholder:text-[var(--color-content-secondary)] focus:outline-none focus:border-[var(--color-content-accent)] transition-colors"
+              />
+              <button
+                type="submit"
+                disabled={status === 'sending'}
+                className="group inline-flex items-center gap-3 bg-gradient-to-br from-[#fce27e] via-[#fad657] to-[#c9a83f] text-[var(--color-content-on-accent)] font-semibold text-[14px] tracking-wide pl-7 pr-2.5 py-2.5 rounded-full transition-all hover:shadow-[0_10px_40px_-6px_rgba(250,214,87,0.75)] hover:translate-y-[-1px] shadow-[0_8px_30px_-8px_rgba(250,214,87,0.55)] disabled:opacity-60"
+              >
+                {status === 'sending' ? 'Joining...' : 'Join the whitelist'}
+                {status !== 'sending' && (
+                  <span className="w-8 h-8 rounded-full bg-black/10 flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] group-hover:translate-x-1 group-hover:-translate-y-[1px]">
+                    →
+                  </span>
+                )}
+              </button>
+            </form>
+          )}
+
+          {status === 'error' && (
+            <p className="mt-4 text-[13px] text-[var(--color-content-secondary)]">Something went wrong. Try again.</p>
+          )}
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
 function ClosingCTASection() {
   return (
     <section className="border-t border-[var(--color-border-medium)] bg-[var(--color-bg-elevated)] py-16 md:py-20 px-6 md:px-10">
@@ -1718,7 +1810,7 @@ function ClosingCTASection() {
           </p>
         </div>
 
-        <Link href="/dashboard" className="md:ml-auto shrink-0 self-start md:self-auto">
+        <Link href="#whitelist" className="md:ml-auto shrink-0 self-start md:self-auto">
           <button className="group inline-flex items-center gap-3 bg-gradient-to-br from-[#fce27e] via-[#fad657] to-[#c9a83f] text-[var(--color-content-on-accent)] font-semibold text-[14px] tracking-wide pl-7 pr-2.5 py-2.5 rounded-full transition-all hover:shadow-[0_10px_40px_-6px_rgba(250,214,87,0.75)] hover:translate-y-[-1px] shadow-[0_8px_30px_-8px_rgba(250,214,87,0.55)]">
             Get early access
             <span className="w-8 h-8 rounded-full bg-black/10 flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] group-hover:translate-x-1 group-hover:-translate-y-[1px]">
@@ -1803,6 +1895,7 @@ export default function LandingPage() {
       <RoadmapSection />
       <TeamSection />
       <FAQSection />
+      <WhitelistSection />
       <ClosingCTASection />
       <Footer />
     </div>

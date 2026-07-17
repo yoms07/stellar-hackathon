@@ -75,7 +75,7 @@ export default function PackagesPage() {
                 ))}
               </ul>
 
-              <Link href="/dashboard" className="mt-8 block">
+              <Link href="/#whitelist" className="mt-8 block">
                 <button className="group w-full inline-flex items-center justify-center gap-3 bg-gradient-to-br from-[#fce27e] via-[#fad657] to-[#c9a83f] text-[var(--color-content-on-accent)] font-semibold text-[14px] tracking-wide px-7 py-3 rounded-full transition-all hover:shadow-[0_10px_40px_-6px_rgba(250,214,87,0.75)] hover:translate-y-[-1px] shadow-[0_8px_30px_-8px_rgba(250,214,87,0.55)]">
                   Get early access
                   <span className="w-8 h-8 rounded-full bg-black/10 flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] group-hover:translate-x-1 group-hover:-translate-y-[1px]">

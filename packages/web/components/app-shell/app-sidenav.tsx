@@ -38,6 +38,29 @@ const navItems = [
     ),
   },
   {
+    label: 'Communities',
+    href: '/app/communities',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="9" cy="8" r="3" />
+        <circle cx="17" cy="9" r="2.5" />
+        <path d="M3.5 19.5c0-3 2.5-5.5 5.5-5.5s5.5 2.5 5.5 5.5" />
+        <path d="M15 15.5c2.4 0 4.5 1.9 4.5 4" />
+      </svg>
+    ),
+  },
+  {
+    label: 'Packages',
+    href: '/app/packages',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="m3.5 8 8.5-4.5L20.5 8 12 12.5 3.5 8Z" />
+        <path d="M3.5 8v8L12 20.5 20.5 16V8" />
+        <path d="M12 12.5V20.5" />
+      </svg>
+    ),
+  },
+  {
     label: 'Start',
     href: '/start',
     icon: (
