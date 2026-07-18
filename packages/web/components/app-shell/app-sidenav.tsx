@@ -42,18 +42,6 @@ const memberNavItems = [
     ),
   },
   {
-    label: 'Benefits',
-    href: '/dashboard/benefits',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <rect x="3.5" y="9" width="17" height="11" rx="1.5" />
-        <path d="M3.5 13h17" />
-        <path d="M12 9v11" />
-        <path d="M12 9c-1.4 0-4-.7-4-3a2.3 2.3 0 0 1 4-1.5c.4-.6 1-1.5 2-1.5a2.3 2.3 0 0 1 2 3.5c-.6.9-2.3 2.5-4 2.5Z" />
-      </svg>
-    ),
-  },
-  {
     label: 'Communities',
     href: '/app/communities',
     icon: (

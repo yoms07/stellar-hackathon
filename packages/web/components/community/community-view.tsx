@@ -75,9 +75,6 @@ export function CommunityView({ address }: { address: string }) {
           <Link className="btn ghost" href="/dashboard">
             Access dashboard
           </Link>
-          <Link className="btn ghost" href="/dashboard/benefits">
-            Back to benefits
-          </Link>
         </div>
       </div>
 

@@ -98,7 +98,7 @@ export class ContentService {
 
   static async list(cursor: string | undefined, limit: number) {
     const rows = await prisma.content.findMany({
-      where: { status: ContentStatus.REGISTERED },
+      where: { status: ContentStatus.REGISTERED, isHidden: false },
       orderBy: { id: 'asc' },
       take: limit + 1,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),

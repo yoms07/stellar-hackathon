@@ -49,6 +49,7 @@ model Content {
   status        ContentStatus @default(DRAFT)
   contentType   ContentType   @default(PDF)
   modules       Json? // array of { title: string }, COURSE-type only; unused otherwise
+  isHidden      Boolean       @default(false) // ops-only: excludes broken/unrecoverable blobs from listings
   createdAt     DateTime      @default(now())
 
   @@index([creatorWallet])
