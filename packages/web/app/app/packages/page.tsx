@@ -1,19 +1,12 @@
 'use client';
 
-import Link from 'next/link';
-
 import { AppShell } from '@/components/app-shell/app-shell';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { formatTokenAmount } from '@/lib/contracts';
+import { SubscriptionCard } from '@/components/dashboard/subscription-card';
 import { SAMPLE_PACKAGES } from '@/lib/catalog';
-import { useConfig } from '@/services/subscription';
 
-/** In-app packages page: the live testnet bundle plus the illustrative pilot lineup. */
+/** In-app packages page: the live testnet bundle (with the real subscribe flow, moved here
+ *  from the Library page) plus the illustrative pilot lineup. */
 export default function AppPackagesPage() {
-  const config = useConfig();
-  const livePrice = config.data ? formatTokenAmount(config.data.price) : '10';
-
   return (
     <AppShell>
       <main className="shell shell-wide">
@@ -32,35 +25,15 @@ export default function AppPackagesPage() {
         </header>
 
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <article className="card-standard px-7 py-8 flex flex-col ring-1 ring-[var(--color-border-accent)]">
-            <div className="flex items-center justify-between">
-              <h3 className="font-serif text-[1.4rem] leading-tight text-[var(--color-content-primary)]">
-                Community Bundle
-              </h3>
+          <div className="flex flex-col">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] tracking-[0.06em] uppercase text-[var(--color-content-secondary)]">
+                Featured Package
+              </span>
               <span className="pill ok">LIVE</span>
             </div>
-
-            {config.isLoading ? (
-              <Skeleton className="mt-4 h-9 w-32 rounded-md" />
-            ) : (
-              <p className="mt-4 font-serif text-[2.2rem] leading-none text-[var(--color-content-primary)]">
-                {livePrice} USDC <span className="text-[14px] font-sans text-[var(--color-content-secondary)]">/ month</span>
-              </p>
-            )}
-
-            <div className="mt-6 border-t border-[var(--color-border-medium)]" />
-
-            <p className="mt-6 text-[14px] leading-relaxed text-[var(--color-content-secondary)] flex-1">
-              The bundle currently live on testnet. One payment unlocks every whitelisted
-              community's library.
-            </p>
-
-            <Link href="/dashboard" className="mt-8 block">
-              <Button type="button" className="w-full">
-                Subscribe
-              </Button>
-            </Link>
-          </article>
+            <SubscriptionCard title="Community Bundle" subtitle="Single subscription, every partner community" />
+          </div>
 
           {SAMPLE_PACKAGES.map((pkg) => (
             <article key={pkg.name} className="card-standard px-7 py-8 flex flex-col opacity-80">

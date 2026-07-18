@@ -20,7 +20,13 @@ import {
 
 /** Member subscription status card (DESIGN.md §4.2 "Subscription card"): price as `.balance`,
  *  status pill, faucet + subscribe CTAs. */
-export function SubscriptionCard() {
+export function SubscriptionCard({
+  title = 'Membership',
+  subtitle = 'Single subscription, every partner community',
+}: {
+  title?: string;
+  subtitle?: string;
+}) {
   const status = useSubscriptionStatus();
   const config = useConfig();
   const balance = useUsdcBalance();
@@ -68,7 +74,7 @@ export function SubscriptionCard() {
       {/* Identity: what this is + current state, together — the pill reads as a status on the
           title, not a fact buried mid-card. */}
       <div className="row" style={{ marginBottom: 0 }}>
-        <h2 style={{ margin: 0 }}>Membership</h2>
+        <h2 style={{ margin: 0 }}>{title}</h2>
         {status.isLoading ? (
           <Skeleton className="h-5 w-24 rounded-full" />
         ) : status.data?.isActive ? (
@@ -79,7 +85,7 @@ export function SubscriptionCard() {
           <span className="pill warn">NOT A MEMBER</span>
         )}
       </div>
-      <span className="label">Single subscription, every partner community</span>
+      <span className="label">{subtitle}</span>
 
       {/* The number that matters, with the mandatory mock-token caveat attached directly to
           it (D-002) instead of as an unrelated footnote at the bottom of the card. */}

@@ -65,7 +65,7 @@ export function ManagerContentList() {
     <section className="card">
       <h2>Earnings</h2>
 
-      <span className="label">Active balance</span>
+      <span className="label">Distributed Earning</span>
       {accrued.isLoading ? (
         <Skeleton className="h-9 w-32 rounded-md" style={{ marginTop: 6 }} />
       ) : (

@@ -54,16 +54,6 @@ const memberNavItems = [
     ),
   },
   {
-    label: 'Explore',
-    href: '/explore',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <circle cx="12" cy="12" r="9" />
-        <path d="m15.5 8.5-2.1 4.9-4.9 2.1 2.1-4.9 4.9-2.1Z" />
-      </svg>
-    ),
-  },
-  {
     label: 'Communities',
     href: '/app/communities',
     icon: (
@@ -83,16 +73,6 @@ const memberNavItems = [
         <path d="m3.5 8 8.5-4.5L20.5 8 12 12.5 3.5 8Z" />
         <path d="M3.5 8v8L12 20.5 20.5 16V8" />
         <path d="M12 12.5V20.5" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Start',
-    href: '/start',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M12 3v18M3 12h18" />
-        <circle cx="12" cy="12" r="9" />
       </svg>
     ),
   },

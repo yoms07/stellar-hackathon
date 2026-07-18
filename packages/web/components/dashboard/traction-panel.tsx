@@ -66,16 +66,16 @@ export function TractionPanel() {
         <Skeleton className="h-24 w-full rounded-md" />
       ) : stats.data ? (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <Metric label="Subscribers" tip="Memberships bought across all communities, all-time.">
+          <Metric label="Active" tip="Memberships bought across all communities, all-time.">
             {stats.data.totalSubs.toString()}
           </Metric>
           <Metric label="Volume" tip="Total USDC ever paid in subscriptions.">
             {formatTokenAmount(stats.data.totalVolume)} USDC
           </Metric>
-          <Metric label="Content" tip="PDFs published across all communities.">
+          <Metric label="Packages" tip="PDFs published across all communities.">
             {stats.data.contentCount.toString()}
           </Metric>
-          <Metric label="Managers" tip="Wallets registered as community creators.">
+          <Metric label="Assets" tip="Wallets registered as community creators.">
             {stats.data.managerCount}
           </Metric>
           <Metric label="Paid to creators" tip="USDC creators have withdrawn from their earnings so far.">

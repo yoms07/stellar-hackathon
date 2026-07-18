@@ -33,7 +33,7 @@ export default function CommunityPage() {
                 title="You're not a manager yet"
                 hint="Start a community to publish content and earn from reads — it's free and takes about a minute."
                 ctaHref="/start"
-                ctaLabel="Start your community"
+                ctaLabel="Start Community"
               />
             ) : (
               <>
