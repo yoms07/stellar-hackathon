@@ -1,12 +1,32 @@
 'use client';
 
-import { AppShell } from '@/components/app-shell/app-shell';
-import { SubscriptionCard } from '@/components/dashboard/subscription-card';
-import { SAMPLE_PACKAGES } from '@/lib/catalog';
+import { useState } from 'react';
 
-/** In-app packages page: the live testnet bundle (with the real subscribe flow, moved here
- *  from the Library page) plus the illustrative pilot lineup. */
+import { AppShell } from '@/components/app-shell/app-shell';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { formatTokenAmount } from '@/lib/contracts';
+import { SAMPLE_PACKAGES } from '@/lib/catalog';
+import { useConfig, useSubscribe, useSubscriptionStatus } from '@/services/subscription';
+
+/** In-app packages page: just the list — the live testnet bundle (with a working Subscribe
+ *  button) plus the illustrative pilot lineup, same card styling throughout. */
 export default function AppPackagesPage() {
+  const config = useConfig();
+  const status = useSubscriptionStatus();
+  const subscribe = useSubscribe();
+  const [error, setError] = useState<string | null>(null);
+  const livePrice = config.data ? formatTokenAmount(config.data.price) : '10';
+
+  async function handleSubscribe() {
+    setError(null);
+    try {
+      await subscribe.mutateAsync();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Subscribe failed');
+    }
+  }
+
   return (
     <AppShell>
       <main className="shell shell-wide">
@@ -25,15 +45,38 @@ export default function AppPackagesPage() {
         </header>
 
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="flex flex-col">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] tracking-[0.06em] uppercase text-[var(--color-content-secondary)]">
-                Featured Package
-              </span>
+          <article className="card-standard px-7 py-8 flex flex-col ring-1 ring-[var(--color-border-accent)]">
+            <div className="flex items-center justify-between">
+              <h3 className="font-serif text-[1.4rem] leading-tight text-[var(--color-content-primary)]">
+                Community Bundle
+              </h3>
               <span className="pill ok">LIVE</span>
             </div>
-            <SubscriptionCard title="Community Bundle" subtitle="Single subscription, every partner community" />
-          </div>
+
+            {config.isLoading ? (
+              <Skeleton className="mt-4 h-9 w-32 rounded-md" />
+            ) : (
+              <p className="mt-4 font-serif text-[2.2rem] leading-none text-[var(--color-content-primary)]">
+                {livePrice} USDC <span className="text-[14px] font-sans text-[var(--color-content-secondary)]">/ month</span>
+              </p>
+            )}
+
+            <div className="mt-6 border-t border-[var(--color-border-medium)]" />
+
+            <p className="mt-6 text-[14px] leading-relaxed text-[var(--color-content-secondary)] flex-1">
+              One payment unlocks every whitelisted community&apos;s library.
+            </p>
+
+            <Button
+              type="button"
+              onClick={handleSubscribe}
+              disabled={subscribe.isPending || !!status.data?.isActive}
+              className="mt-8 w-full"
+            >
+              {subscribe.isPending ? 'Subscribing…' : status.data?.isActive ? "You're in" : 'Subscribe'}
+            </Button>
+            {error ? <p className="error text-center">{error}</p> : null}
+          </article>
 
           {SAMPLE_PACKAGES.map((pkg) => (
             <article key={pkg.name} className="card-standard px-7 py-8 flex flex-col opacity-80">

@@ -1,7 +1,6 @@
 'use client';
 
 import { NetworkGuard } from '@/components/wallet/network-guard';
-import { ExploreCta } from '@/components/ui/explore-cta';
 
 import { ActionStrip } from './action-strip';
 import { AdminNudge } from './admin-nudge';
@@ -26,7 +25,6 @@ export function DashboardShell() {
           <h1 className="dash-title">Dashboard</h1>
           <p className="dash-sub">Everything one membership unlocks for you.</p>
         </div>
-        <ExploreCta />
       </div>
 
       <NetworkGuard />

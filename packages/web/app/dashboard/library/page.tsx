@@ -1,14 +1,12 @@
 'use client';
 
-import Link from 'next/link';
-
 import { AppShell } from '@/components/app-shell/app-shell';
 import { ActivityRail } from '@/components/dashboard/activity-rail';
 import { ContentGrid } from '@/components/dashboard/content-grid';
 import { ContinueCard } from '@/components/dashboard/continue-card';
 import { DashboardAccessGate } from '@/components/dashboard/dashboard-access';
 import { MembershipOverview } from '@/components/dashboard/membership-overview';
-import { Button } from '@/components/ui/button';
+import { SubscribePrompt } from '@/components/dashboard/subscribe-prompt';
 import { Skeleton } from '@/components/ui/skeleton';
 
 /** `/dashboard/library` — the member reading experience: membership snapshot, continue-reading,
@@ -33,14 +31,7 @@ export default function LibraryPage() {
               </section>
             ) : !access.isSubscribed ? (
               <>
-                {/* Subscribing now happens on the Packages page — this just points there. */}
-                <section className="card center">
-                  <h2>Not a member yet</h2>
-                  <p className="hint">Subscribe to a package to unlock this library.</p>
-                  <Button asChild>
-                    <Link href="/app/packages">Browse packages</Link>
-                  </Button>
-                </section>
+                <SubscribePrompt />
                 {/* Locked preview: every row already renders a LOCKED pill + "Subscribe to
                     open" CTA when there's no active subscription (see ContentRow). */}
                 <ContentGrid />
