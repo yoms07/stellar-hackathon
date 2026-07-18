@@ -61,7 +61,7 @@ export function TractionPanel() {
 
   return (
     <section className="card">
-      <h2>Traction</h2>
+      <h2>On-chain data</h2>
       {stats.isLoading ? (
         <Skeleton className="h-24 w-full rounded-md" />
       ) : stats.data ? (
@@ -78,7 +78,7 @@ export function TractionPanel() {
           <Metric label="Assets" tip="Wallets registered as community creators.">
             {stats.data.managerCount}
           </Metric>
-          <Metric label="Paid to creators" tip="USDC creators have withdrawn from their earnings so far.">
+          <Metric label="Paid to communities" tip="USDC creators have withdrawn from their earnings so far.">
             {formatTokenAmount(stats.data.totalClaimed)} USDC
           </Metric>
           <Metric

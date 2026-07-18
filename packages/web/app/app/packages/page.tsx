@@ -4,19 +4,32 @@ import { useState } from 'react';
 
 import { AppShell } from '@/components/app-shell/app-shell';
 import { Button } from '@/components/ui/button';
+import { Icon } from '@/components/ui/icon';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatTokenAmount } from '@/lib/contracts';
 import { SAMPLE_PACKAGES } from '@/lib/catalog';
-import { useConfig, useSubscribe, useSubscriptionStatus } from '@/services/subscription';
+import {
+  useConfig,
+  useFaucet,
+  useFaucetAvailableAt,
+  useSubscribe,
+  useSubscriptionStatus,
+} from '@/services/subscription';
 
 /** In-app packages page: just the list — the live testnet bundle (with a working Subscribe
- *  button) plus the illustrative pilot lineup, same card styling throughout. */
+ *  button, plus the faucet needed to get test USDC before subscribing) and the illustrative
+ *  pilot lineup, same card styling throughout. */
 export default function AppPackagesPage() {
   const config = useConfig();
   const status = useSubscriptionStatus();
   const subscribe = useSubscribe();
+  const faucetAt = useFaucetAvailableAt();
+  const faucet = useFaucet();
   const [error, setError] = useState<string | null>(null);
   const livePrice = config.data ? formatTokenAmount(config.data.price) : '10';
+
+  const faucetReady =
+    !faucetAt.data || faucetAt.data === 0n || faucetAt.data * 1000n <= BigInt(Date.now());
 
   async function handleSubscribe() {
     setError(null);
@@ -24,6 +37,15 @@ export default function AppPackagesPage() {
       await subscribe.mutateAsync();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Subscribe failed');
+    }
+  }
+
+  async function handleFaucet() {
+    setError(null);
+    try {
+      await faucet.mutateAsync();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Faucet call failed');
     }
   }
 
@@ -67,11 +89,28 @@ export default function AppPackagesPage() {
               One payment unlocks every whitelisted community&apos;s library.
             </p>
 
+            {!status.data?.isActive ? (
+              <button
+                type="button"
+                className="stat-link self-start"
+                onClick={handleFaucet}
+                disabled={faucet.isPending || !faucetReady}
+                style={!faucetReady ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
+              >
+                <Icon name="coins" size={13} />
+                {faucet.isPending
+                  ? 'Requesting…'
+                  : faucetReady
+                    ? 'Get free test USDC'
+                    : 'Faucet on cooldown'}
+              </button>
+            ) : null}
+
             <Button
               type="button"
               onClick={handleSubscribe}
               disabled={subscribe.isPending || !!status.data?.isActive}
-              className="mt-8 w-full"
+              className="mt-4 w-full"
             >
               {subscribe.isPending ? 'Subscribing…' : status.data?.isActive ? "You're in" : 'Subscribe'}
             </Button>
