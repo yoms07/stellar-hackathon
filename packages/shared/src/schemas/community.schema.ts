@@ -17,11 +17,19 @@ const LOGO_MAX = 768 * 1024; // data: URL of a small image; generous cap, still 
  */
 const LOGO_DATA_URL = /^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/]+={0,2}$/;
 
+/** A single manager-editable benefit line shown on the community page (D-010 extension). */
+export const CommunityBenefitSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+});
+export type CommunityBenefit = z.infer<typeof CommunityBenefitSchema>;
+
 export const CommunityBrandSchema = z.object({
   wallet: z.string(),
   name: z.string(),
   description: z.string(),
   logo: z.string().nullable(), // data: URL or null
+  benefits: z.array(CommunityBenefitSchema).default([]),
   updatedAt: z.string(), // ISO datetime
 });
 export type CommunityBrand = z.infer<typeof CommunityBrandSchema>;
@@ -35,6 +43,7 @@ export const SaveCommunityRequestSchema = z.object({
     .regex(LOGO_DATA_URL, 'Logo must be a PNG, JPEG, WebP, or GIF image')
     .nullable()
     .default(null),
+  benefits: z.array(CommunityBenefitSchema).max(20).default([]),
 });
 export type SaveCommunityRequest = z.infer<typeof SaveCommunityRequestSchema>;
 

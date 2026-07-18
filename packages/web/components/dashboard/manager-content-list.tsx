@@ -9,35 +9,22 @@ import { OnChainProof } from '@/components/ui/trust';
 import { formatTokenAmount } from '@/lib/contracts';
 import { accountExplorerUrl, getStellarConfig } from '@/lib/stellar';
 import { useWallet } from '@/providers/wallet-provider';
-import {
-  useAccrued,
-  useClaim,
-  useCurrentEpoch,
-  useForceCloseEpoch,
-  useMyContent,
-  usePendingBalance,
-  useSettleAll,
-} from '@/services/manager';
-import { useConfig } from '@/services/subscription';
+import { useAccrued, useClaim, usePendingBalance, useSettleAll } from '@/services/manager';
 
 /**
  * Manager earnings + content + payout. Money is per-member (D-009): a reader's payment is split
  * across the content they read when their cycle closes, landing in the manager's pending balance.
  * Settle-all moves that pending balance into the active (withdrawable) balance in one call; claim
- * withdraws it. Admin can `force_close_epoch` to end the cycle on demand for the demo (D-012).
+ * withdraws it. The admin-only `force_close_epoch` control lives on its own `/dashboard/admin`
+ * page (`AdminEpochPanel`), not here — it's a contract-admin role, not a manager one.
  */
 export function ManagerContentList() {
   const { address } = useWallet();
-  const myContent = useMyContent();
   const accrued = useAccrued();
   const pending = usePendingBalance();
   const claim = useClaim();
   const settleAll = useSettleAll();
-  const config = useConfig();
-  const currentEpoch = useCurrentEpoch();
-  const forceClose = useForceCloseEpoch();
 
-  const isAdmin = !!address && config.data?.admin === address;
   const pendingAmount = pending.data ? BigInt(pending.data.amount) : undefined;
 
   const [error, setError] = useState<string | null>(null);
@@ -53,17 +40,6 @@ export function ManagerContentList() {
       setNotice('Withdrawn to your wallet.');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Withdraw failed');
-    }
-  }
-
-  async function handleForceClose() {
-    setError(null);
-    setNotice(null);
-    try {
-      await forceClose.mutateAsync();
-      setNotice('Cycle closed. Readers can now be paid out.');
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Couldn’t close the cycle');
     }
   }
 
@@ -118,40 +94,7 @@ export function ManagerContentList() {
         </p>
       </div>
 
-      {/* Your content */}
-      <div className="tx">
-        <span className="label">Your content ({myContent.data?.length ?? 0})</span>
-        {myContent.isLoading ? (
-          <Skeleton className="h-12 w-full rounded-md" style={{ marginTop: 8 }} />
-        ) : myContent.data && myContent.data.length > 0 ? (
-          <dl className="tx-grid" style={{ marginTop: 8 }}>
-            {myContent.data.map((c) => (
-              <div key={c.id} style={{ display: 'contents' }}>
-                <dt>#{c.id}</dt>
-                <dd style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                  {c.active ? (
-                    <span className="pill ok">
-                      <Icon name="check" size={11} /> LIVE
-                    </span>
-                  ) : (
-                    <span className="pill warn">HIDDEN</span>
-                  )}
-                  <span className="label" style={{ textTransform: 'none' }}>
-                    {c.epochReads} {c.epochReads === 1 ? 'read' : 'reads'} this cycle
-                  </span>
-                </dd>
-              </div>
-            ))}
-          </dl>
-        ) : (
-          <p className="hint" style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-            <Icon name="upload" size={15} />
-            Nothing published yet. Add your first content above.
-          </p>
-        )}
-      </div>
-
-      {/* Get paid: pending balance -> active balance, plus force-close (admin/demo) */}
+      {/* Get paid: pending balance -> active balance */}
       <div className="tx">
         <span className="label">Pending balance</span>
         {pending.isLoading ? (
@@ -162,18 +105,6 @@ export function ManagerContentList() {
         <p className="hint" style={{ marginTop: 4, marginBottom: 12 }}>
           Earned from reads, not yet in your active balance.
         </p>
-
-        {isAdmin ? (
-          <div style={{ marginBottom: 12 }}>
-            <Button type="button" variant="outline" onClick={handleForceClose} disabled={forceClose.isPending}>
-              <Icon name="flag" size={15} />
-              {forceClose.isPending ? 'Closing…' : `Close cycle ${currentEpoch.data ?? ''} now`}
-            </Button>
-            <p className="hint" style={{ marginBottom: 0 }}>
-              Demo tool: makes this cycle’s earnings available to move to your active balance.
-            </p>
-          </div>
-        ) : null}
 
         <div style={{ marginBottom: 12 }}>
           <Button

@@ -22,6 +22,8 @@ interface WalletState {
   isInstalled: boolean;
   /** User has granted access and an address is available. */
   isConnected: boolean;
+  /** Still restoring an already-authorized session from the extension on mount. */
+  restoring: boolean;
   /** Connected account public key (G...), or null. */
   address: string | null;
   /** Active Freighter network name (e.g. "TESTNET"), or null. */
@@ -45,21 +47,28 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [connecting, setConnecting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [restoring, setRestoring] = useState(true);
 
-  // Detect the extension and restore an already-authorized session on mount.
+  // Detect the extension and restore an already-authorized session on mount. Pages that
+  // branch on `isConnected` (the dashboard funnel) wait on `restoring` first, so a returning
+  // subscriber doesn't flash through the "connect wallet" state before this resolves.
   useEffect(() => {
     let active = true;
     (async () => {
-      const { isConnected: installed } = await isConnected();
-      if (!active) return;
-      setIsInstalled(installed);
-      if (!installed) return;
+      try {
+        const { isConnected: installed } = await isConnected();
+        if (!active) return;
+        setIsInstalled(installed);
+        if (!installed) return;
 
-      const addr = await getAddress();
-      if (active && !addr.error && addr.address) {
-        setAddress(addr.address);
-        const net = await getNetwork();
-        if (active && !net.error) setNetwork(net.network);
+        const addr = await getAddress();
+        if (active && !addr.error && addr.address) {
+          setAddress(addr.address);
+          const net = await getNetwork();
+          if (active && !net.error) setNetwork(net.network);
+        }
+      } finally {
+        if (active) setRestoring(false);
       }
     })();
     return () => {
@@ -124,6 +133,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     () => ({
       isInstalled,
       isConnected: !!address,
+      restoring,
       address,
       network,
       connecting,
@@ -133,7 +143,18 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       disconnect,
       refresh,
     }),
-    [isInstalled, address, network, connecting, refreshing, error, connect, disconnect, refresh],
+    [
+      isInstalled,
+      address,
+      restoring,
+      network,
+      connecting,
+      refreshing,
+      error,
+      connect,
+      disconnect,
+      refresh,
+    ],
   );
 
   return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;

@@ -34,6 +34,7 @@
   /* Border */
   --color-border-medium: #262521;
   --color-border-accent: #fad657;
+  --color-border-hover: #3a362c;
 
   /* Spacing scale (4 / 8 / 12 / 16 / 20 / 32 / 48) */
   --space-1: 4px;
@@ -82,6 +83,66 @@
   --radius: 0.6875rem; /* rounded-md → 9px, matches --radius-md */
 }
 
+/* -------------------------------------------------------------------------- */
+/*  Light mode override (DESIGN.md §2, "Light mode documented 2026-07-14").    */
+/*  Dark is the brand default; this block overrides every semantic token for   */
+/*  `data-theme="light"`. Values are copied verbatim from the DESIGN.md        */
+/*  token tables / prototype styles.css — do not re-derive them.               */
+/*  The accent split: --color-content-accent (text/icons) deepens to #8f6b00   */
+/*  for contrast on the light background; --color-bg-accent (fills) stays the  */
+/*  vivid #fad657 in both themes. Never swap the two, see DESIGN.md §2.        */
+/*  The shadcn HSL block below is a derived provisional mapping (not specified */
+/*  in DESIGN.md) kept in sync with the --color-* values above by the same     */
+/*  accent-split rule: --primary uses the FILL token (bg-accent), not the text */
+/*  token, so shadcn buttons keep AA contrast against --primary-foreground.    */
+/* -------------------------------------------------------------------------- */
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  /* Backgrounds */
+  --color-bg-primary: #faf6ef;
+  --color-bg-accent: #fad657;
+  --color-bg-elevated: #ffffff;
+  --color-bg-input: #f2ecdf;
+  --color-bg-accent-tint: rgba(214, 168, 20, 0.16);
+  --color-bg-success-tint: rgba(29, 138, 92, 0.12);
+  --color-bg-warning-tint: rgba(200, 95, 46, 0.12);
+
+  /* Content */
+  --color-content-primary: #241f15;
+  --color-content-secondary: #6e675a;
+  --color-content-accent: #8f6b00;
+  --color-content-on-accent: #201607;
+  --color-content-success: #1d8a5c;
+  --color-content-warning: #b35325;
+  --color-content-danger: #c23434;
+
+  /* Border */
+  --color-border-medium: #e4dcc9;
+  --color-border-accent: #b08d3e;
+
+  /* shadcn/ui compatibility layer, light values — see the dark block above */
+  --background: 38 52% 96%; /* color-bg-primary   #faf6ef */
+  --foreground: 40 26% 11%; /* color-content-primary #241f15 */
+  --card: 0 0% 100%; /* color-bg-elevated  #ffffff */
+  --card-foreground: 40 26% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 40 26% 11%;
+  --primary: 47 94% 66%; /* color-bg-accent (fill)  #fad657 */
+  --primary-foreground: 36 64% 8%; /* color-content-on-accent #201607 */
+  --secondary: 42 33% 84%; /* color-border-medium #e4dcc9 */
+  --secondary-foreground: 40 26% 11%;
+  --muted: 38 40% 94%;
+  --muted-foreground: 39 10% 39%; /* color-content-secondary #6e675a */
+  --accent: 42 33% 84%; /* subtle hover surface */
+  --accent-foreground: 40 26% 11%;
+  --destructive: 0 58% 48%; /* color-content-danger #c23434 */
+  --destructive-foreground: 0 0% 100%;
+  --border: 42 33% 84%; /* color-border-medium */
+  --input: 42 33% 84%; /* input border */
+  --ring: 42 48% 47%; /* color-border-accent #b08d3e */
+}
+
 body {
   background: var(--color-bg-primary);
   color: var(--color-content-primary);
@@ -109,7 +170,7 @@ body {
    pay/subscribe interaction (see subscription-card.tsx inline max-width). */
 .shell.shell-wide {
   max-width: 1200px;
-  padding: var(--space-3) var(--space-6) var(--space-6);
+  padding: var(--space-7) var(--space-6) var(--space-6);
 }
 
 /* Sticky app bar (DESIGN.md deviation from "no nav" — logged in §1, app pages only).
@@ -553,6 +614,57 @@ code {
   text-decoration-style: solid;
 }
 
+/* Tx status notice (DESIGN.md §4.2 TOAST): fixed bottom-right, reuses the card
+   surface + feedback text tokens. Motion: opacity/transform only, 180ms ease-out. */
+.toast {
+  position: fixed;
+  right: var(--space-5);
+  bottom: var(--space-5);
+  z-index: 40;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  max-width: 360px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-medium);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-elevated);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  animation: toast-in 180ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none;
+  }
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.toast-msg {
+  font-size: 13px;
+  line-height: 1.5;
+}
+.toast-dismiss {
+  margin-left: auto;
+  background: none;
+  border: 0;
+  padding: 0 0 0 var(--space-2);
+  font-size: 16px;
+  line-height: 1;
+  color: var(--color-content-secondary);
+  cursor: pointer;
+}
+.toast-dismiss:hover {
+  color: var(--color-content-primary);
+}
+
 /* Transaction detail (technical panel) */
 .tx {
   margin-top: var(--space-3);
@@ -596,10 +708,10 @@ footer a {
 }
 
 /* ---------- Funnel chrome (prototype index.html / subscribe.html) ----------
-   Pre-subscription states on /dashboard swap the sidenav for a slim topbar + a
-   3-step stepper + centered card layout. See FunnelShell. Prototype class names
-   are reused verbatim (styles.css); the funnel stepper is scoped under
-   .funnel-stepper so it never collides with the existing onboarding .stepper. */
+   Used by the /start onboarding flow (start-topbar.tsx, start-wizard.tsx): a slim
+   topbar + centered card layout. Prototype class names reused verbatim (styles.css).
+   /dashboard no longer uses this chrome — see dashboard-shell.tsx, connect-gate.tsx,
+   subscribe-gate.tsx. */
 
 .funnel-shell {
   max-width: 1160px;
@@ -639,73 +751,6 @@ footer a {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-}
-
-.funnel-stepper {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  min-width: 0;
-}
-.funnel-stepper .step {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 1;
-  min-width: 0;
-}
-.funnel-stepper .step-dot {
-  width: 24px;
-  height: 24px;
-  border-radius: var(--radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-.funnel-stepper .step.done .step-dot {
-  background: var(--color-bg-accent);
-  color: var(--color-content-on-accent);
-}
-.funnel-stepper .step.active .step-dot {
-  background: var(--color-bg-accent-tint);
-  color: var(--color-content-accent);
-  border: 1px solid var(--color-content-accent);
-}
-.funnel-stepper .step.todo .step-dot {
-  background: transparent;
-  color: var(--color-content-secondary);
-  border: 1px solid var(--color-border-medium);
-}
-.funnel-stepper .step-name {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
-}
-.funnel-stepper .step.done .step-name {
-  color: var(--color-content-primary);
-}
-.funnel-stepper .step.active .step-name {
-  color: var(--color-content-accent);
-}
-.funnel-stepper .step.todo .step-name {
-  color: var(--color-content-secondary);
-}
-.funnel-stepper .step-line {
-  flex: 1 1 16px;
-  height: 1px;
-  background: var(--color-border-medium);
-  min-width: 6px;
-}
-.funnel-stepper .step-line.lit {
-  background: var(--color-bg-accent);
-  opacity: 0.5;
 }
 
 /* two-tone headline (board motif: line 1 cream, line 2 gold) */
@@ -775,55 +820,6 @@ footer a {
   margin-left: 10px;
 }
 
-/* split allocation rows */
-.alloc-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  align-items: center;
-  column-gap: var(--space-3);
-  row-gap: 6px;
-  padding: var(--space-2) 0;
-}
-.alloc-name {
-  font-size: 14px;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.alloc-pct {
-  font-size: 13px;
-  color: var(--color-content-secondary);
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  min-width: 42px;
-}
-.alloc-amt {
-  font-size: 14px;
-  font-weight: 600;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  min-width: 80px;
-}
-.alloc-track {
-  grid-column: 1 / -1;
-  height: 4px;
-  background: var(--color-bg-input);
-  border-radius: var(--radius-full);
-  overflow: hidden;
-}
-.alloc-fill {
-  height: 100%;
-  background: var(--color-bg-accent);
-  border-radius: var(--radius-full);
-}
-
-/* split-flow visual: the ONE sanctioned use of the gold glow */
-.split-flow {
-  box-shadow: 0 0 24px var(--glow-split, rgba(250, 214, 87, 0.35));
-  border-color: var(--color-border-accent);
-}
-
 /* single centered pay flow */
 .pay-col {
   max-width: 520px;
@@ -840,8 +836,255 @@ footer a {
   align-items: start;
 }
 
+/* vertical stack of cards (member panel columns) */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* dashboard main/sidebar split (member panel: library + continue card vs. activity/stats) */
+.grid-dash {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-4);
+  align-items: start;
+}
+
+/* profile card vs. packages card split (partner preview, prototype partner.html) */
+.grid-detail {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: var(--space-4);
+  align-items: start;
+}
+
+/* Dashboard stat chips (DESIGN.md §4.2 "Dashboard stat chips") */
+.stat-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+.stat-chip {
+  flex: 1 1 140px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-card);
+  background: linear-gradient(var(--color-bg-elevated), var(--color-bg-elevated)) padding-box,
+              linear-gradient(180deg, var(--color-border-medium), color-mix(in srgb, var(--color-border-medium) 35%, transparent)) border-box;
+  padding: var(--space-3) var(--space-4);
+  transition: border-color 140ms ease;
+}
+.stat-chip:hover {
+  border-color: var(--color-border-hover);
+}
+.stat-value {
+  font-size: 24px;
+  font-family: var(--font-display, 'Geist', sans-serif);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  margin-top: 2px;
+}
+
+/* Dashboard header: left-aligned title + action, replacing the centered marketing tagline on
+   app pages (the sidenav already carries brand/nav, so the canvas leads with content). */
+.dash-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  text-align: left;
+  margin-bottom: var(--space-1);
+}
+.dash-title {
+  font-family: var(--font-display, 'Geist', sans-serif);
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.dash-sub {
+  font-size: 14px;
+  color: var(--color-content-secondary);
+  margin-top: 2px;
+}
+.dash-head .explore-cta {
+  margin-top: 0;
+}
+
+/* Overview KPI strip: membership status + wallet + counts as one scannable row of chips. */
+.overview-strip .stat-chip {
+  flex: 1 1 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.stat-value-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.stat-value small {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-content-secondary);
+}
+.stat-cap {
+  font-size: 12px;
+  color: var(--color-content-secondary);
+}
+.dot-ok {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-content-success);
+  flex-shrink: 0;
+}
+.dot-warn {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-content-warning);
+  flex-shrink: 0;
+}
+
+/* Home overview chips are links into the page that owns the full workflow. */
+a.stat-chip-link {
+  color: inherit;
+  text-decoration: none;
+}
+a.stat-chip-link:hover {
+  border-color: var(--color-content-accent);
+}
+.stat-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-content-accent);
+  font-size: 12px;
+  cursor: pointer;
+}
+.stat-link:hover {
+  text-decoration: underline;
+}
+
+/* Slim partner-recruitment strip, demoted to the bottom of the member dashboard. */
+.partner-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+/* Manager content-management rows: id + status on the left, visibility toggle on the right. */
+.content-manage-list {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--space-2);
+}
+.content-manage-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border-medium);
+}
+.content-manage-row:last-child {
+  border-bottom: none;
+}
+.cmr-lead {
+  min-width: 0;
+}
+.cmr-id-line {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.cmr-id {
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.cmr-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--color-content-secondary);
+}
+.cmr-note {
+  font-size: 12px;
+  color: var(--color-content-secondary);
+  white-space: nowrap;
+}
+
+/* library grouped-by-partner sections (dashboard) */
+.lib-group + .lib-group {
+  border-top: 1px solid var(--color-border-medium);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+}
+.lib-head {
+  margin-bottom: var(--space-1);
+}
+
+/* content row leading text (type label / title / meta line) */
+.content-type {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-content-secondary);
+}
+.content-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+.content-meta {
+  font-size: 13px;
+  color: var(--color-content-secondary);
+  margin-top: 2px;
+}
+
+/* personal activity feed rows */
+.feed-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border-medium);
+  font-size: 14px;
+}
+.feed-row:last-child {
+  border-bottom: none;
+}
+.feed-main {
+  min-width: 0;
+}
+.feed-kind {
+  font-weight: 600;
+  font-size: 14px;
+}
+.feed-detail {
+  color: var(--color-content-secondary);
+  font-size: 14px;
+}
+.feed-when {
+  font-size: 12px;
+  color: var(--color-content-secondary);
+  white-space: nowrap;
+}
+
 @media (max-width: 900px) {
-  .grid-2 {
+  .grid-2,
+  .grid-dash,
+  .grid-detail {
     grid-template-columns: 1fr;
   }
 }

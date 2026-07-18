@@ -5,10 +5,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useWallet } from '@/providers/wallet-provider';
 
 import { managerKeys } from '../manager/manager.queries';
+import { progressKeys } from '../progress/progress.queries';
 import { ApiError } from '../api/http';
 import { ContentService } from './content.service';
 import { contentKeys } from './content.queries';
-import type { DownloadResponse } from './content.types';
+import type { DownloadResponse, Progress, UpdateProgressRequest } from './content.types';
 
 export function useContentList() {
   const { address } = useWallet();
@@ -116,6 +117,21 @@ export function useOpenContent(contentId: string) {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: contentKeys.all(address) });
+    },
+  });
+}
+
+/** `PATCH /content/:id/progress` — mark module(s) done or a flat read percentage. Invalidates
+ *  `services/progress`'s `GET /me/progress` cache too, so the dashboard's "continue where you
+ *  left off" card and this page's own progress card stay in sync after a mutation. */
+export function useUpdateProgress(contentId: string) {
+  const { address } = useWallet();
+  const qc = useQueryClient();
+
+  return useMutation<Progress, Error, UpdateProgressRequest>({
+    mutationFn: (body) => ContentService.updateProgress(contentId, body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: progressKeys.all(address) });
     },
   });
 }

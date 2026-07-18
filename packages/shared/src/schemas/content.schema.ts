@@ -12,6 +12,14 @@ export const ContentListQuerySchema = z.object({
 });
 export type ContentListQuery = z.infer<typeof ContentListQuerySchema>;
 
+export const ContentTypeSchema = z.enum(['PDF', 'COURSE', 'VIDEO', 'EBOOK', 'LINK']);
+export type ContentType = z.infer<typeof ContentTypeSchema>;
+
+export const ContentModuleSchema = z.object({
+  title: z.string(),
+});
+export type ContentModule = z.infer<typeof ContentModuleSchema>;
+
 export const ContentListItemSchema = z.object({
   contentId: z.string(), // stringified u64
   title: z.string(),
@@ -20,6 +28,10 @@ export const ContentListItemSchema = z.object({
   sizeBytes: z.number().int(),
   creatorWallet: z.string(),
   createdAt: z.string(), // ISO datetime
+  contentType: ContentTypeSchema.default('PDF'),
+  modules: z.array(ContentModuleSchema).optional(), // COURSE-type only
+  communityName: z.string().nullable(), // null if the manager has no brand set up
+  communityLogo: z.string().nullable(),
 });
 export type ContentListItem = z.infer<typeof ContentListItemSchema>;
 

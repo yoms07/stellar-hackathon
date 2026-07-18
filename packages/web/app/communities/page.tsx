@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { PARTNER_COMMUNITIES } from '@/lib/catalog';
+import { useCommunities } from '@/services/community/community.hook';
 
 function Logo() {
   return <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/logo-mark.png`} alt="Komunify" className="h-8 w-auto shrink-0" />;
@@ -34,15 +34,17 @@ function Header() {
 
 export default function CommunitiesPage() {
   const [query, setQuery] = useState('');
+  const { data, isLoading, isError } = useCommunities();
+  const communities = data?.communities ?? [];
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return PARTNER_COMMUNITIES;
-    return PARTNER_COMMUNITIES.filter(
+    if (!q) return communities;
+    return communities.filter(
       (community) =>
         community.name.toLowerCase().includes(q) || community.description.toLowerCase().includes(q)
     );
-  }, [query]);
+  }, [communities, query]);
 
   return (
     <div className="relative overflow-hidden">
@@ -73,33 +75,47 @@ export default function CommunitiesPage() {
         </div>
 
         <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {filtered.map((community) => (
-            <article
-              key={community.name}
-              className="group card-standard card-hoverable h-full px-6 py-6 md:px-7 md:py-7 shadow-[inset_0_1px_1px_rgba(255,255,255,0.04)] flex flex-col"
-            >
-              <div className="relative z-[1] flex flex-1 flex-col">
-                <div className="w-14 h-14 shrink-0 rounded-full overflow-hidden ring-1 ring-[color-mix(in_srgb,var(--color-content-accent)_25%,transparent)]">
-                  <img
-                    src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}${community.logo}`}
-                    alt={community.name}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-                <h3 className="mt-6 font-serif text-[1.35rem] leading-tight text-[var(--color-content-primary)]">
-                  {community.name}
-                </h3>
-                <p className="mt-3 text-[14px] leading-relaxed text-[var(--color-content-secondary)]">
-                  {community.description}
-                </p>
-                <span className="mt-4 self-start inline-flex rounded-full border border-[color-mix(in_srgb,var(--color-content-accent)_20%,transparent)] bg-[var(--color-bg-accent-tint)] px-3 py-1.5 font-mono text-[11px] tracking-wide text-[color-mix(in_srgb,var(--color-content-accent)_80%,transparent)]">
-                  {community.badge}
-                </span>
-              </div>
-            </article>
-          ))}
+          {isLoading &&
+            Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-full min-h-[220px] rounded-md border border-[color-mix(in_srgb,var(--color-content-secondary)_15%,transparent)] animate-pulse"
+              />
+            ))}
 
-          {filtered.length === 0 && (
+          {!isLoading &&
+            !isError &&
+            filtered.map((community) => (
+              <article
+                key={community.wallet}
+                className="group card-standard card-hoverable h-full px-6 py-6 md:px-7 md:py-7 shadow-[inset_0_1px_1px_rgba(255,255,255,0.04)] flex flex-col"
+              >
+                <div className="relative z-[1] flex flex-1 flex-col">
+                  <div className="w-14 h-14 shrink-0 rounded-full overflow-hidden ring-1 ring-[color-mix(in_srgb,var(--color-content-accent)_25%,transparent)] bg-[var(--color-bg-accent-tint)]">
+                    {community.logo && (
+                      <img src={community.logo} alt={community.name} className="h-full w-full object-cover" />
+                    )}
+                  </div>
+                  <h3 className="mt-6 font-serif text-[1.35rem] leading-tight text-[var(--color-content-primary)]">
+                    {community.name}
+                  </h3>
+                  <p className="mt-3 text-[14px] leading-relaxed text-[var(--color-content-secondary)]">
+                    {community.description}
+                  </p>
+                  <span className="mt-4 self-start inline-flex rounded-full border border-[color-mix(in_srgb,var(--color-content-accent)_20%,transparent)] bg-[var(--color-bg-accent-tint)] px-3 py-1.5 font-mono text-[11px] tracking-wide text-[color-mix(in_srgb,var(--color-content-accent)_80%,transparent)]">
+                    {community.contentCount} {community.contentCount === 1 ? 'item' : 'items'}
+                  </span>
+                </div>
+              </article>
+            ))}
+
+          {isError && (
+            <p className="col-span-full text-center text-[14px] text-[var(--color-content-secondary)]">
+              Couldn&apos;t load communities. Try again later.
+            </p>
+          )}
+
+          {!isLoading && !isError && filtered.length === 0 && (
             <p className="col-span-full text-center text-[14px] text-[var(--color-content-secondary)]">
               No communities match that search.
             </p>

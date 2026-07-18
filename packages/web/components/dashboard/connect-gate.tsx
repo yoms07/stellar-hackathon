@@ -7,12 +7,13 @@ import { useCommunities } from '@/services/community';
 import { StartCommunityCard } from './start-community-card';
 
 /**
- * FunnelShell step-1 content (prototype index.html "wallet-disconnected" pattern):
- * a two-tone hero card plus a connect card. Wallet connect reuses the existing
- * `useWallet().connect` handler; partner count reuses the existing `useCommunities`
- * query that the sidenav already fetches for the partner list.
+ * Dashboard empty state for a disconnected wallet. The sidenav/AppShell chrome is already
+ * mounted (D-006's single /dashboard route stays one app, not a separate funnel page) — this
+ * is just the content area's gate: a two-tone hero card plus a connect card. Wallet connect
+ * reuses the existing `useWallet().connect` handler; partner count reuses the existing
+ * `useCommunities` query the sidenav already fetches for the partner list.
  */
-export function FunnelConnect() {
+export function ConnectGate() {
   const { connect, connecting } = useWallet();
   const communities = useCommunities();
   const partners = communities.data?.communities ?? [];

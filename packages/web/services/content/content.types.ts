@@ -1,6 +1,6 @@
-import type { ContentListItem, DownloadResponse } from '@komunify/shared';
+import type { ContentListItem, DownloadResponse, Progress, UpdateProgressRequest } from '@komunify/shared';
 
-export type { ContentListItem, DownloadResponse };
+export type { ContentListItem, DownloadResponse, Progress, UpdateProgressRequest };
 
 export interface OnChainContent {
   id: bigint;

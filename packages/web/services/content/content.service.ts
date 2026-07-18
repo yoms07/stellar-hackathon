@@ -1,4 +1,10 @@
-import type { ConfirmResponse, ContentListResponse, UploadResponse } from '@komunify/shared';
+import type {
+  ConfirmResponse,
+  ContentListResponse,
+  Progress,
+  UpdateProgressRequest,
+  UploadResponse,
+} from '@komunify/shared';
 
 import { getKomunifyClient } from '@/lib/contracts';
 
@@ -59,6 +65,12 @@ export class ContentService {
   /** The gate — `GET /content/:id/download` (API_SPEC.md §2). */
   static download(contentId: string): Promise<DownloadResponse> {
     return ApiHttp.get<DownloadResponse>(API_ENDPOINTS.content.download(contentId));
+  }
+
+  /** `PATCH /content/:id/progress` — persist module completion / read percentage for the
+   *  session wallet. A UX convenience layered on chain-verified access, not entitlement. */
+  static updateProgress(contentId: string, body: UpdateProgressRequest): Promise<Progress> {
+    return ApiHttp.patch<Progress>(API_ENDPOINTS.content.progress(contentId), body);
   }
 
   /**

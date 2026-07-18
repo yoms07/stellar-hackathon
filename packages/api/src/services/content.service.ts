@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { ContentStatus, type Content as ContentRow } from '@prisma/client';
+import { ContentStatus, type Community as CommunityRow, type Content as ContentRow } from '@prisma/client';
 import { prisma } from '../config/database.js';
 import { ConflictError, ForbiddenError, NotFoundError } from '../lib/errors.js';
 import { deleteBlob, storeBlob } from '../lib/blob.js';
@@ -105,8 +105,17 @@ export class ContentService {
     });
 
     const hasMore = rows.length > limit;
-    const items = (hasMore ? rows.slice(0, limit) : rows).map(toListItem);
+    const pageRows = hasMore ? rows.slice(0, limit) : rows;
     const nextCursor = hasMore ? rows[limit - 1].id : null;
+
+    // Left-join Community on creatorWallet for communityName/communityLogo enrichment.
+    const wallets = [...new Set(pageRows.map((r) => r.creatorWallet))];
+    const communities = wallets.length
+      ? await prisma.community.findMany({ where: { wallet: { in: wallets } } })
+      : [];
+    const communityByWallet = new Map(communities.map((c) => [c.wallet, c]));
+
+    const items = pageRows.map((row) => toListItem(row, communityByWallet.get(row.creatorWallet)));
 
     return { items, nextCursor };
   }
@@ -157,7 +166,7 @@ export class ContentService {
   }
 }
 
-function toListItem(row: ContentRow) {
+function toListItem(row: ContentRow, community?: CommunityRow) {
   return {
     contentId: row.contractId as string,
     title: row.title,
@@ -166,5 +175,9 @@ function toListItem(row: ContentRow) {
     sizeBytes: row.sizeBytes,
     creatorWallet: row.creatorWallet,
     createdAt: row.createdAt.toISOString(),
+    contentType: row.contentType,
+    modules: (row.modules as Array<{ title: string }> | null) ?? undefined,
+    communityName: community?.name ?? null,
+    communityLogo: community?.logo ?? null,
   };
 }

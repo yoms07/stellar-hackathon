@@ -18,6 +18,7 @@ export const API_ENDPOINTS = {
     upload: '/content/upload',
     confirm: (draftId: string) => `/content/${draftId}/confirm`,
     download: (contentId: string) => `/content/${contentId}/download`,
+    progress: (contentId: string) => `/content/${contentId}/progress`,
   },
 
   // Community brand (D-010)
@@ -35,6 +36,12 @@ export const API_ENDPOINTS = {
 
   // Traction (docs/API_SPEC.md §3)
   stats: '/stats',
+
+  // Per-wallet progress + activity (auth required, docs/API_SPEC.md)
+  me: {
+    progress: '/me/progress',
+    activity: '/me/activity',
+  },
 
   // Users — generic pre-existing scaffold, unrelated to komunify auth (Phase 0 note)
   users: {

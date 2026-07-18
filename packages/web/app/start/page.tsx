@@ -1,8 +1,11 @@
-import { AppShell } from '@/components/app-shell/app-shell';
+import { StartTopbar } from '@/components/onboarding/start-topbar';
 import { StartWizard } from '@/components/onboarding/start-wizard';
 
 export default function StartPage() {
   return (
-    <AppShell><main className="shell shell-wide"><StartWizard /></main></AppShell>
+    <main className="funnel-shell">
+      <StartTopbar />
+      <StartWizard />
+    </main>
   );
 }

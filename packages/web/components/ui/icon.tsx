@@ -26,7 +26,11 @@ export type IconName =
   | 'arrow-right'
   | 'pen'
   | 'sign-out'
-  | 'flag';
+  | 'flag'
+  | 'eye'
+  | 'eye-off'
+  | 'sun'
+  | 'moon';
 
 const PATHS: Record<IconName, ReactElement> = {
   lock: (
@@ -135,6 +139,27 @@ const PATHS: Record<IconName, ReactElement> = {
       <path d="M5 4h9l-2 3 2 3H5" />
     </>
   ),
+  eye: (
+    <>
+      <path d="M2.5 10S5.5 4.5 10 4.5 17.5 10 17.5 10 14.5 15.5 10 15.5 2.5 10 2.5 10Z" />
+      <circle cx="10" cy="10" r="2.3" />
+    </>
+  ),
+  'eye-off': (
+    <>
+      <path d="M8.3 5.2A8.6 8.6 0 0 1 10 4.5c4.5 0 7.5 5.5 7.5 5.5a15 15 0 0 1-1.9 2.5" />
+      <path d="M5.6 6.4A13.8 13.8 0 0 0 2.5 10s3 5.5 7.5 5.5a8.3 8.3 0 0 0 2.6-.4" />
+      <path d="M8.4 8.5a2.3 2.3 0 0 0 3.2 3.2" />
+      <path d="M3 3l14 14" />
+    </>
+  ),
+  sun: (
+    <>
+      <circle cx="10" cy="10" r="3.5" />
+      <path d="M10 2.5v2M10 15.5v2M3.5 10h2M14.5 10h2M5.4 5.4l1.4 1.4M13.2 13.2l1.4 1.4M14.6 5.4l-1.4 1.4M6.8 13.2l-1.4 1.4" />
+    </>
+  ),
+  moon: <path d="M16 12.3A6.8 6.8 0 0 1 7.7 4 7 7 0 1 0 16 12.3z" />,
 };
 
 export function Icon({

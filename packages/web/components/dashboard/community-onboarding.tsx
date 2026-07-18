@@ -62,7 +62,7 @@ export function BrandForm({
       setLocalError('Community name is required');
       return;
     }
-    onSave({ name: name.trim(), description: description.trim(), logo });
+    onSave({ name: name.trim(), description: description.trim(), logo, benefits: [] });
   }
 
   return (

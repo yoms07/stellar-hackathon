@@ -46,6 +46,10 @@ const BENEFITS: { icon: IconName; title: string; body: string }[] = [
  * runs the D-011 self-serve path (become a manager on-chain, then persist the brand D-010);
  * step 3 celebrates and folds in the existing publish flow so a new manager can ship their
  * first piece without leaving the journey.
+ *
+ * Width follows the same convention as the dashboard's connect gate: the pre-auth pitch runs
+ * in the full-width `grid-2` hero (matches `ConnectGate`), the guided steps that follow run in
+ * the narrower `.pay-col` since they are a form, not a hero moment.
  */
 export function StartWizard() {
   const { isConnected, address, connecting, error: walletError, connect } = useWallet();
@@ -83,32 +87,65 @@ export function StartWizard() {
   // --- Gates: connect, then sign in, before the wizard proper (D-001). -----------------------
   if (!isConnected || !address) {
     return (
-      <section className="card center">
-        <p style={{ margin: '0 0 4px', fontWeight: 600, display: 'inline-flex', gap: 6, alignItems: 'center' }}>
-          <Icon name="wallet" size={16} /> Have premium resources?
-        </p>
-        <p className="hint" style={{ marginTop: 0 }}>
-          Publish your digital assets, private access, and learning resources. Earn payout straight
-          to your wallet anytime. It's free to start and takes about minutes.
-        </p>
-        <Button type="button" onClick={connect} disabled={connecting}>
-          {connecting ? 'Connecting…' : 'Connect Freighter'}
-        </Button>
-        {walletError ? <p className="error">{walletError}</p> : null}
-      </section>
+      <div className="grid-2">
+        <section className="card center">
+          <h1 className="headline">
+            Get paid for
+            <span className="gold">what you publish.</span>
+          </h1>
+          <p className="hint">
+            Share your best PDFs and earn every time a member opens one. Payouts land straight in
+            your wallet, no middleman.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+            {BENEFITS.map((b) => (
+              <div key={b.title} className="benefit">
+                <span className="benefit-icon">
+                  <Icon name={b.icon} size={18} />
+                </span>
+                <div>
+                  <p className="benefit-title">{b.title}</p>
+                  <p className="benefit-body">{b.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="card">
+          <div className="num-label">
+            <span className="num">01</span> WALLET
+          </div>
+          <h2>Connect to start</h2>
+          <p className="hint">
+            Connect a Stellar wallet to claim your community on-chain. This runs on testnet, no
+            real funds move.
+          </p>
+          <Button type="button" onClick={connect} disabled={connecting}>
+            {connecting ? 'Connecting…' : 'Connect Freighter'}
+          </Button>
+          {walletError ? <p className="error">{walletError}</p> : null}
+        </section>
+      </div>
     );
   }
 
   if (me.isLoading || isManager.isLoading || community.isLoading) {
     return (
-      <section className="card">
-        <Skeleton className="h-24 w-full rounded-md" />
-      </section>
+      <div className="pay-col">
+        <section className="card">
+          <Skeleton className="h-24 w-full rounded-md" />
+        </section>
+      </div>
     );
   }
 
   if (!isAuthenticated) {
-    return <SignInCard />;
+    return (
+      <div className="pay-col">
+        <SignInCard />
+      </div>
+    );
   }
 
   // Fully set-up manager on arrival (step 0): don't re-run onboarding. We require a saved brand
@@ -117,32 +154,35 @@ export function StartWizard() {
   // flips the role (step > 0), this guard is skipped so the live step still renders.
   if (isManager.data && community.data && step === 0) {
     return (
-      <section className="card center">
-        <p style={{ margin: '0 0 4px', fontWeight: 600, display: 'inline-flex', gap: 6, alignItems: 'center' }}>
-          <Icon name="check" size={16} /> You already run a community
-        </p>
-        <p className="hint" style={{ marginTop: 0 }}>
-          Publish new content, edit your brand, and claim earnings from your dashboard.
-        </p>
-        <div className="row tight" style={{ justifyContent: 'center' }}>
-          <Button asChild>
-            <Link href="/dashboard">Go to dashboard</Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link href={`/community/${address}`} target="_blank" rel="noreferrer">
-              View my page
-            </Link>
-          </Button>
-        </div>
-      </section>
+      <div className="pay-col">
+        <section className="card center">
+          <span className="pill ok">
+            <Icon name="check" size={13} /> Already a manager
+          </span>
+          <h2 style={{ margin: '10px 0 0' }}>You already run a community</h2>
+          <p className="hint">
+            Publish new content, edit your brand, and claim earnings from your dashboard.
+          </p>
+          <div className="row tight" style={{ justifyContent: 'center' }}>
+            <Button asChild>
+              <Link href="/dashboard">Go to dashboard</Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/community/${address}`} target="_blank" rel="noreferrer">
+                View my page
+              </Link>
+            </Button>
+          </div>
+        </section>
+      </div>
     );
   }
 
   const brand = community.data ?? null;
 
   return (
-    <>
-      <header style={{ marginBottom: 0 }}>
+    <div className="pay-col">
+      <header>
         <span className="label">Start a community</span>
         <div style={{ marginTop: 'var(--space-3)' }}>
           <OnboardingStepper steps={STEPS} current={step} />
@@ -151,8 +191,11 @@ export function StartWizard() {
 
       {step === 0 ? (
         <section className="card">
-          <h2 style={{ marginTop: 0 }}>Get paid for what you publish</h2>
-          <p className="hint" style={{ marginTop: 0 }}>
+          <div className="num-label">
+            <span className="num">01</span> WHY PUBLISH
+          </div>
+          <h2>Get paid for what you publish</h2>
+          <p className="hint">
             Share your best PDFs and earn every time a member opens one. Your payouts land straight
             in your wallet. It is free to start and takes about a minute.
           </p>
@@ -170,7 +213,7 @@ export function StartWizard() {
             ))}
           </div>
           <Button type="button" onClick={() => setStep(1)}>
-            <Icon name="sparkle" size={15} /> Create my community
+            Create my community
           </Button>
           <p className="hint" style={{ margin: 'var(--space-3) 0 0' }}>
             Free to start. You will sign one quick transaction to claim your community on-chain.
@@ -180,7 +223,10 @@ export function StartWizard() {
 
       {step === 1 ? (
         <section className="card">
-          <h2 style={{ marginTop: 0 }}>Name your community</h2>
+          <div className="num-label">
+            <span className="num">02</span> BRAND
+          </div>
+          <h2>Name your community</h2>
           <BrandForm
             initial={null}
             saving={busy}
@@ -196,13 +242,11 @@ export function StartWizard() {
       {step === 2 ? (
         <>
           <section className="card">
-            <p className="success" style={{ marginTop: 0, display: 'flex', gap: 6, alignItems: 'center', fontSize: 15 }}>
-              <Icon name="check" size={16} /> You are live
-            </p>
-            <p style={{ margin: '0 0 4px', fontWeight: 700 }}>
-              {brand?.name ?? 'Your community'} is now on komunify.
-            </p>
-            <p className="hint" style={{ marginTop: 0 }}>
+            <span className="pill ok">
+              <Icon name="check" size={13} /> You are live
+            </span>
+            <h2 style={{ margin: '10px 0 4px' }}>{brand?.name ?? 'Your community'} is now on komunify.</h2>
+            <p className="hint">
               Add your first piece below so members have something to unlock. You can publish more
               anytime from your dashboard.
             </p>
@@ -215,13 +259,13 @@ export function StartWizard() {
 
           <UploadStepper />
 
-          <div className="center">
+          <div style={{ textAlign: 'center' }}>
             <Button asChild variant="outline" size="sm">
               <Link href="/dashboard">Go to dashboard →</Link>
             </Button>
           </div>
         </>
       ) : null}
-    </>
+    </div>
   );
 }

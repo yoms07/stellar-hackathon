@@ -640,7 +640,7 @@ function HeroSection() {
                 src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/${demoVideos[demoTab].src}`}
                 poster={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/${demoVideos[demoTab].poster}`}
                 autoPlay
-                muted={demoTab === 'how'}
+                muted
                 playsInline
                 preload="metadata"
                 onEnded={() => setDemoTab((prev) => (prev === 'howto' ? 'how' : 'howto'))}

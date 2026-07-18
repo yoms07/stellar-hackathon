@@ -83,6 +83,12 @@ export const ApiHttp = {
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
   },
+  patch<T>(endpoint: string, body?: unknown): Promise<T> {
+    return request<T>(endpoint, {
+      method: 'PATCH',
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+  },
   postForm<T>(endpoint: string, form: FormData): Promise<T> {
     return request<T>(endpoint, { method: 'POST', body: form });
   },

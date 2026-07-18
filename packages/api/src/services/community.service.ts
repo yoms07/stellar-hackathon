@@ -38,8 +38,14 @@ export class CommunityService {
   static async save(wallet: string, data: SaveCommunityRequest) {
     const row = await prisma.community.upsert({
       where: { wallet },
-      create: { wallet, name: data.name, description: data.description, logo: data.logo },
-      update: { name: data.name, description: data.description, logo: data.logo },
+      create: {
+        wallet,
+        name: data.name,
+        description: data.description,
+        logo: data.logo,
+        benefits: data.benefits,
+      },
+      update: { name: data.name, description: data.description, logo: data.logo, benefits: data.benefits },
     });
     return toBrand(row);
   }
@@ -51,6 +57,7 @@ function toBrand(row: CommunityRow) {
     name: row.name,
     description: row.description,
     logo: row.logo,
+    benefits: (row.benefits as Array<{ title: string; description: string }> | null) ?? [],
     updatedAt: row.updatedAt.toISOString(),
   };
 }

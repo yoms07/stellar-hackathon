@@ -101,6 +101,22 @@ export class ManagerService {
     return assembled.signAndSend();
   }
 
+  /**
+   * `set_content_active(creator, content_id, active)` — require_auth(creator). Flips a piece of
+   * content's public visibility: hidden content drops out of members' libraries and can't be read,
+   * but stays on-chain and keeps its recorded reads. Only the original creator may call it
+   * (contract errors `NotContentCreator` otherwise), so the connected wallet must equal `creator`.
+   */
+  static async setContentActive(creator: string, contentId: bigint, active: boolean) {
+    const client = getKomunifyClient(creator);
+    const assembled = await client.set_content_active({
+      creator,
+      content_id: contentId,
+      active,
+    });
+    return assembled.signAndSend();
+  }
+
   /** `register_content(caller, sha256)` — require_auth(caller), caller must be a manager. */
   static async registerContent(caller: string, sha256: Uint8Array): Promise<bigint> {
     const client = getKomunifyClient(caller);

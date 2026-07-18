@@ -2,72 +2,62 @@
 
 import { NetworkGuard } from '@/components/wallet/network-guard';
 import { ExploreCta } from '@/components/ui/explore-cta';
-import { Icon } from '@/components/ui/icon';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useWallet } from '@/providers/wallet-provider';
-import { useMe } from '@/services/auth';
-import { useIsManager } from '@/services/manager';
 
-import { ManagerPanel } from './manager-panel';
-import { MemberPanel } from './member-panel';
-import { SignInCard } from './session-card';
-import { StartCommunityCard } from './start-community-card';
+import { ActionStrip } from './action-strip';
+import { AdminNudge } from './admin-nudge';
+import { ContinueCard } from './continue-card';
+import { DashboardAccessGate } from './dashboard-access';
+import { HomeOverview } from './home-overview';
+import { SubscribeGate } from './subscribe-gate';
 import { TractionPanel } from './traction-panel';
 
-/** `/dashboard` shell — one route, manager vs member panel from `is_manager(wallet)` (D-006). */
+/**
+ * `/dashboard` — home. A summary, not a work surface: one overview chip per thing the wallet
+ * already *has* (membership, community, earnings), each linking to the dedicated page that
+ * owns that workflow (`/dashboard/library`, `/community`, `/earnings`, `/admin`). Publishing,
+ * payouts, and billing-cycle controls used to all live here at once; they're each one click
+ * away now instead of stacked on one page.
+ */
 export function DashboardShell() {
-  const { isConnected, address } = useWallet();
-  const me = useMe();
-  const isManager = useIsManager();
-
-  // A connected wallet is not yet a session: upload/confirm/download all need the kmf_session
-  // cookie (D-001), so gate the panels behind sign-in. The cookie is scoped to whichever
-  // address signed the auth challenge — if the active Freighter account has since switched,
-  // the session is for a different wallet than the one on-chain actions now use (D-001/wallet
-  // provider note: "switching accounts must invalidate everything"). Treat that as unauthenticated
-  // so the member re-signs for the current address instead of getting SUB_INACTIVE-type
-  // entitlement checks run against a stale session address.
-  const isAuthenticated = !!me.data && me.data.address === address;
-
   return (
     <>
-      <header>
-        <p className="tagline" style={{ marginTop: 0 }}>Single subscription multiple benefits</p>
+      <div className="dash-head">
+        <div>
+          <h1 className="dash-title">Dashboard</h1>
+          <p className="dash-sub">Everything one membership unlocks for you.</p>
+        </div>
         <ExploreCta />
-      </header>
+      </div>
 
       <NetworkGuard />
 
-      {!isConnected ? (
-        <section className="card center">
-          <span className="label" style={{ display: 'block', marginBottom: 6 }}>Step 1 of 2</span>
-          <p style={{ margin: '0 0 4px', fontWeight: 600, display: 'flex', gap: 6, alignItems: 'center', justifyContent: 'center' }}>
-            <Icon name="wallet" size={16} /> Connect your wallet
-          </p>
-          <p className="hint" style={{ margin: 0 }}>
-            Your Stellar wallet is your account here. No email, no password. Connect Freighter to
-            get started.
-          </p>
-        </section>
-      ) : me.isLoading ? (
-        <section className="card">
-          <Skeleton className="h-24 w-full rounded-md" />
-        </section>
-      ) : !isAuthenticated ? (
-        <SignInCard />
-      ) : isManager.isLoading ? (
-        <section className="card">
-          <Skeleton className="h-24 w-full rounded-md" />
-        </section>
-      ) : isManager.data ? (
-        <ManagerPanel />
-      ) : (
-        <>
-          {/* Self-serve (D-011): a signed-in non-manager can start a community and become one. */}
-          <StartCommunityCard />
-          <MemberPanel />
-        </>
-      )}
+      <DashboardAccessGate>
+        {(access) => (
+          <>
+            <HomeOverview isManager={access.isManager} />
+
+            {!access.isSubscribedLoading && !access.isSubscribed ? (
+              <SubscribeGate />
+            ) : access.isSubscribed ? (
+              <ContinueCard
+                fallback={
+                  <ActionStrip
+                    icon="unlock"
+                    title="Nothing opened yet"
+                    hint="Your library is unlocked — pick something and start reading."
+                    href="/dashboard/library"
+                    cta="Browse Library"
+                  />
+                }
+              />
+            ) : null}
+
+            {/* Rare, protocol-level control — demoted to its own slim strip near the bottom
+                rather than sitting among the wallet's own stats above. */}
+            <AdminNudge />
+          </>
+        )}
+      </DashboardAccessGate>
 
       <TractionPanel />
     </>

@@ -107,6 +107,26 @@ export function useRegisterContent() {
   });
 }
 
+/**
+ * Toggle a piece of content's public visibility on-chain (`set_content_active`). Signed by the
+ * connected wallet, which must be the content's creator. On success refreshes the manager's
+ * content list and every public content query so members' libraries reflect the change.
+ */
+export function useSetContentActive() {
+  const { address } = useWallet();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (vars: { contentId: bigint; creator: string; active: boolean }) => {
+      if (!address) throw new Error('Connect a wallet first');
+      return ManagerService.setContentActive(vars.creator, vars.contentId, vars.active);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: managerKeys.myContent(address) });
+      qc.invalidateQueries({ queryKey: ['content'] });
+    },
+  });
+}
+
 /** Self-register as a manager on-chain (D-011). Invalidates the role queries on success. */
 export function useBecomeManager() {
   const { address } = useWallet();

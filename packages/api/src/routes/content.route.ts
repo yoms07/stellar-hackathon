@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { bodyLimit } from 'hono/body-limit';
-import { ConfirmRequestSchema, ContentListQuerySchema } from '@komunify/shared';
+import { ConfirmRequestSchema, ContentListQuerySchema, UpdateProgressRequestSchema } from '@komunify/shared';
 import { requireAuth } from '../middleware/auth.middleware.js';
 import { BadRequestError, ForbiddenError } from '../lib/errors.js';
 import { isManager } from '../lib/soroban.js';
@@ -9,6 +9,7 @@ import { readBlob } from '../lib/blob.js';
 import { verifyDownloadToken } from '../lib/jwt.js';
 import { created, success } from '../lib/response.js';
 import { ContentService } from '../services/content.service.js';
+import { ProgressService } from '../services/progress.service.js';
 import type { HonoEnv } from '../types/app.types.js';
 
 const content = new Hono<HonoEnv>();
@@ -72,6 +73,19 @@ content.get('/:contentId/download', requireAuth, async (c) => {
   }
 
   const result = await ContentService.download(contentId, address);
+  return success(c, result);
+});
+
+/**
+ * Auth required: upserts progress for `(sessionWallet, contentId)`. Not entitlement or money —
+ * a UX convenience (course modules, PDF read %) layered on top of chain-verified access.
+ */
+content.patch('/:contentId/progress', requireAuth, zValidator('json', UpdateProgressRequestSchema), async (c) => {
+  const address = c.get('address');
+  const contentId = c.req.param('contentId');
+  const patch = c.req.valid('json');
+
+  const result = await ProgressService.upsert(address, contentId, patch);
   return success(c, result);
 });
 

@@ -10,6 +10,7 @@ import { content } from './routes/content.route.js';
 import { community } from './routes/community.route.js';
 import { manager } from './routes/manager.route.js';
 import { stats } from './routes/stats.route.js';
+import { me } from './routes/me.route.js';
 import { ContentService } from './services/content.service.js';
 
 const app = new Hono();
@@ -25,6 +26,7 @@ app.route('/content', content);
 app.route('/community', community);
 app.route('/manager', manager);
 app.route('/stats', stats);
+app.route('/me', me);
 
 // Root endpoint
 app.get('/', (c) => {

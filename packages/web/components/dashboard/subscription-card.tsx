@@ -5,8 +5,10 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Toast, type ToastState } from '@/components/ui/toast';
 import { ExplorerLink, TestnetNote } from '@/components/ui/trust';
 import { formatTokenAmount } from '@/lib/contracts';
+import { getStellarConfig, txExplorerUrl } from '@/lib/stellar';
 import {
   useConfig,
   useFaucet,
@@ -26,6 +28,7 @@ export function SubscriptionCard() {
   const subscribe = useSubscribe();
   const faucet = useFaucet();
   const [error, setError] = useState<string | null>(null);
+  const [toast, setToast] = useState<ToastState | null>(null);
 
   const faucetReady = !faucetAt.data || faucetAt.data === 0n || faucetAt.data * 1000n <= BigInt(Date.now());
   const insufficientBalance =
@@ -42,15 +45,21 @@ export function SubscriptionCard() {
 
   async function handleSubscribe() {
     setError(null);
+    setToast({ type: 'info', message: 'Confirming your subscription…' });
     try {
-      await subscribe.mutateAsync();
+      const sent = await subscribe.mutateAsync();
+      const hash = sent.sendTransactionResponse?.hash;
+      const { network } = getStellarConfig();
+      const href = hash ? (txExplorerUrl(hash, network) ?? undefined) : undefined;
+      setToast({ type: 'success', message: "You're in.", href, linkLabel: 'View transaction' });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Subscribe failed');
+      setToast({ type: 'error', message: 'Subscribe failed. Try again.' });
     }
   }
 
   return (
-    <section className="card" style={{ maxWidth: 520, marginInline: 'auto' }}>
+    <section className="card">
       <h2>Membership</h2>
       <span className="label">Single subscription multiple benefits</span>
       {config.isLoading ? (
@@ -123,6 +132,8 @@ export function SubscriptionCard() {
       <div className="tx">
         <TestnetNote />
       </div>
+
+      {toast ? <Toast toast={toast} onDismiss={() => setToast(null)} /> : null}
     </section>
   );
 }
