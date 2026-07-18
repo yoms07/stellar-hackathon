@@ -34,7 +34,7 @@ export function SignInCard({
       <p style={{ margin: '6px 0 4px', fontWeight: 600 }}>Sign in to your account</p>
       <p className="hint" style={{ marginTop: 0 }}>
         Your wallet is connected. Now sign one message to start a secure session. This is how you
-        open content and publish. No gas, no password.
+        can browse packages and communities. No gas, no password.
       </p>
       <Button type="button" onClick={handle} disabled={signIn.isPending || !address}>
         <Icon name="pen" size={15} />
