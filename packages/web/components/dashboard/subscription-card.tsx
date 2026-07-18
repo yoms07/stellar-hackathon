@@ -58,14 +58,35 @@ export function SubscriptionCard() {
     }
   }
 
+  const deficit =
+    insufficientBalance && config.data && balance.data !== undefined
+      ? config.data.price - balance.data
+      : undefined;
+
   return (
     <section className="card">
-      <h2>Membership</h2>
-      <span className="label">Single subscription multiple benefits</span>
+      {/* Identity: what this is + current state, together — the pill reads as a status on the
+          title, not a fact buried mid-card. */}
+      <div className="row" style={{ marginBottom: 0 }}>
+        <h2 style={{ margin: 0 }}>Membership</h2>
+        {status.isLoading ? (
+          <Skeleton className="h-5 w-24 rounded-full" />
+        ) : status.data?.isActive ? (
+          <span className="pill ok">
+            <Icon name="check" size={12} /> ACTIVE
+          </span>
+        ) : (
+          <span className="pill warn">NOT A MEMBER</span>
+        )}
+      </div>
+      <span className="label">Single subscription, every partner community</span>
+
+      {/* The number that matters, with the mandatory mock-token caveat attached directly to
+          it (D-002) instead of as an unrelated footnote at the bottom of the card. */}
       {config.isLoading ? (
         <Skeleton className="h-9 w-32 rounded-md" style={{ marginTop: 6 }} />
       ) : (
-        <p className="balance">
+        <p className="balance" style={{ marginBottom: 4 }}>
           {config.data ? formatTokenAmount(config.data.price) : '…'}{' '}
           <ExplorerLink target="usdc" title="View the USDC token contract on Stellar Expert">
             USDC
@@ -75,63 +96,61 @@ export function SubscriptionCard() {
           </span>
         </p>
       )}
+      <TestnetNote style={{ marginBottom: 16 }} />
 
-      <div className="row tight" style={{ marginBottom: 10 }}>
-        {status.isLoading ? (
-          <Skeleton className="h-5 w-24 rounded-full" />
-        ) : status.data?.isActive ? (
-          <span className="pill ok">
-            <Icon name="check" size={12} /> ACTIVE
-          </span>
-        ) : (
-          <span className="pill warn">NOT A MEMBER YET</span>
-        )}
+      {/* Your situation, right before the action it affects: balance vs. the faucet that tops
+          it up, as one small utility row — not a second button competing with Subscribe. */}
+      <div className="row tight" style={{ justifyContent: 'space-between', marginBottom: 10 }}>
         <span className="label" style={{ textTransform: 'none' }}>
-          Wallet: {balance.data !== undefined ? formatTokenAmount(balance.data) : '…'} USDC
+          Your wallet: {balance.data !== undefined ? formatTokenAmount(balance.data) : '…'} USDC
         </span>
+        {!status.data?.isActive ? (
+          <button
+            type="button"
+            className="stat-link"
+            onClick={handleFaucet}
+            disabled={faucet.isPending || !faucetReady}
+            style={!faucetReady ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
+          >
+            <Icon name="coins" size={13} />
+            {faucet.isPending
+              ? 'Requesting…'
+              : faucetReady
+                ? 'Get free test USDC'
+                : 'Faucet on cooldown'}
+          </button>
+        ) : null}
       </div>
 
-      <div className="row tight">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleFaucet}
-          disabled={faucet.isPending || !faucetReady}
-        >
-          <Icon name="coins" size={15} />
-          {faucet.isPending
-            ? 'Requesting…'
-            : faucetReady
-              ? 'Get free test USDC'
-              : 'Faucet on cooldown'}
-        </Button>
-        <Button
-          type="button"
-          onClick={handleSubscribe}
-          disabled={subscribe.isPending || !!status.data?.isActive || insufficientBalance}
-          style={insufficientBalance ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
-        >
-          {subscribe.isPending ? (
-            'Subscribing…'
-          ) : status.data?.isActive ? (
-            <>
-              <Icon name="check" size={15} /> You&apos;re in
-            </>
-          ) : (
-            <>
-              <Icon name="key" size={15} /> Subscribe
-            </>
-          )}
-        </Button>
-      </div>
-      {insufficientBalance && !status.data?.isActive ? (
-        <p className="hint">Get test USDC first, the faucet is free.</p>
+      {/* The one thing to do. Full width so it reads as the single next step, not one of two
+          equal options. */}
+      <Button
+        type="button"
+        onClick={handleSubscribe}
+        disabled={subscribe.isPending || !!status.data?.isActive || insufficientBalance}
+        style={{
+          width: '100%',
+          ...(insufficientBalance ? { opacity: 0.5, cursor: 'not-allowed' } : undefined),
+        }}
+      >
+        {subscribe.isPending ? (
+          'Subscribing…'
+        ) : status.data?.isActive ? (
+          <>
+            <Icon name="check" size={15} /> You&apos;re in
+          </>
+        ) : (
+          <>
+            <Icon name="key" size={15} /> Subscribe
+          </>
+        )}
+      </Button>
+      {deficit !== undefined ? (
+        <p className="hint" style={{ marginBottom: 0 }}>
+          Need {formatTokenAmount(deficit)} more USDC — the faucet above is free.
+        </p>
       ) : null}
       {error ? <p className="error">{error}</p> : null}
-
-      <div className="tx">
-        <TestnetNote />
-      </div>
 
       {toast ? <Toast toast={toast} onDismiss={() => setToast(null)} /> : null}
     </section>
