@@ -26,6 +26,17 @@ enum ContentStatus {
   REGISTERED
 }
 
+// Added for prototype-parity (see docs/DECISIONS.md latest entry). Today's actual content is
+// PDFs only (CLAUDE.md) — this enum exists so richer types can be added later without another
+// migration. No course/video-specific business logic beyond storing the type + optional modules.
+enum ContentType {
+  PDF
+  COURSE
+  VIDEO
+  EBOOK
+  LINK
+}
+
 model Content {
   id            String        @id @default(cuid())
   contractId    String?       @unique // stringified u64, null until confirmed
@@ -36,6 +47,8 @@ model Content {
   sizeBytes     Int
   creatorWallet String
   status        ContentStatus @default(DRAFT)
+  contentType   ContentType   @default(PDF)
+  modules       Json? // array of { title: string }, COURSE-type only; unused otherwise
   createdAt     DateTime      @default(now())
 
   @@index([creatorWallet])
@@ -51,6 +64,21 @@ model Community {
   name        String
   description String   @default("")
   logo        String? // small image as a data: URL, or null
+  benefits    Json? // array of { title: string, description: string }, manager-editable
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+// Per-wallet, per-content progress tracking (prototype parity: course modules, PDF read %).
+// Not entitlement or money — purely a UX convenience layered on top of chain-verified access.
+model Progress {
+  id        String   @id @default(cuid())
+  wallet    String
+  contentId String // matches Content.contractId — stringified on-chain u64
+  data      Json // { pct?: number, doneModules?: number[], lastViewedAt?: string }
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([wallet, contentId])
+  @@index([wallet])
 }
