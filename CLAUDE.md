@@ -171,3 +171,8 @@ Each package has its own `CLAUDE.md` with detailed patterns:
 - `packages/api/CLAUDE.md` — routes, services, middleware, error handling
 - `packages/web/CLAUDE.md` — services, hooks, wallet auth, components
 - `packages/shared/CLAUDE.md` — adding schemas and types
+
+## Agent lessons (read before editing prototype/)
+
+Real mistakes from a past session, with rules to catch them earlier: stale local prototype copies, process-only agent reports, and false "missing file" claims from a single check.
+See `docs/agent-lessons.md`.
